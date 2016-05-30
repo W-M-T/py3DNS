@@ -58,8 +58,8 @@ class RequestHandler(Thread):
         for rdn in self.catalog.zones:
             zone = self.catalog.zones[rdn]
             rdn_parts = rdn.rstrip('.').split('.')
-            print("HParts: " + h_parts)
-            print("RDNparts: " + rdn_parts)
+            print("HParts: " + str(h_parts))
+            print("RDNparts: " + str(rdn_parts))
             if all(l == r for (l, r) in zip(reversed(h_parts), reversed(rdn_parts))) and len(h_parts) >= len(rdn_parts):
                 zone_match = zone
                 best_rdn_parts = rdn_parts
@@ -75,6 +75,7 @@ class RequestHandler(Thread):
         for fqdn, record in zone_match.records.iteritems():   
             if fqdn.rstrip('.') == hname and record.type_ != Type.NS:#Precies het adres dat we willen
                 if self.message.questions[0].qtype == record.type_:
+                    print("recorddata: " + str(record.rdata.data))
                     answer.append(record)
                     
                 elif self.message.questions[0].qtype != Type.CNAME and record.type_ == Type.CNAME:
@@ -84,14 +85,18 @@ class RequestHandler(Thread):
                     answer = answer + extra_answer
                     authority = authority + extra_authority
                     
-        for i in range(len(hparts)):
-            subaddress = ".".join(hparts[i:])
+        for i in range(len(h_parts)):
+            subaddress = ".".join(h_parts[i:])
             print(subaddress)
             
 
             for fqdn, record in zone_match.records.iteritems():                     
                 if fqdn.rstrip('.') == subaddress and record.type_ == Type.NS:
                     authority.append(record)
+
+                    extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.data)
+                    answer = answer + extra_answer
+                    authority = authority + extra_authority
 
         return list(set(answer)), list(set(authority)), (bool(answer) or bool(authority))
 
@@ -112,11 +117,11 @@ class RequestHandler(Thread):
         print("Wat we in de zone hebben gevonden")
         print("ans auth found")
         print(answer)
-        if (answer):
-            print(answer[0].rdata.data)
+        for ans in answer:
+            print(ans.rdata.data)
         print(authority)
-        if (authority):
-            print(authority[0].rdata.data)
+        for aut in authority:
+            print(aut.rdata.data)
         print(found)
         
         if found:
@@ -129,7 +134,7 @@ class RequestHandler(Thread):
 
             self.sendResponse(dns.message.Message(header, self.message.questions, answer, authority))
 
-        elif self.message.header.rd == 256:
+        else:
             print("In de server waar we het niet in de zone hebben")
             h, al, ad = self.resolver.gethostbyname(hname)
             print("Server gebruikte online resolver en vond dit")

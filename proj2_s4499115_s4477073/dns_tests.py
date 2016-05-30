@@ -22,13 +22,13 @@ class TestResolver(unittest.TestCase):
     def setUp(self):
         self.resolver = dns.resolver.Resolver(5, False, 1000)
 
-    def atestNoCacheResolveExistingFQDN(self):
+    def testNoCacheResolveExistingFQDN(self):
         h, al, ad = self.resolver.gethostbyname("gaia.cs.umass.edu")
         self.assertEqual("gaia.cs.umass.edu", h)
         self.assertEqual([], al)
         self.assertEqual(["128.119.245.12"], ad)
 
-    def atestNoCacheResolveNotExistingFQDN(self):
+    def testNoCacheResolveNotExistingFQDN(self):
         h, al, ad = self.resolver.gethostbyname("s.h.u.c.k.l.e")
         self.assertEqual("s.h.u.c.k.l.e", h)
         self.assertEqual([], al)
@@ -39,7 +39,7 @@ class TestResolverCache(unittest.TestCase):
     def setUp(self):
         self.resolver = dns.resolver.Resolver(5, True, 10)
 
-    def atestResolveInvalidCachedFQDN(self):
+    def testResolveInvalidCachedFQDN(self):
         shuckleRecord = dns.resource.ResourceRecord("s.h.u.c.k.l.e",\
                 dns.types.Type.A, dns.classes.Class.IN,\
                 int(time.time() + 5), dns.resource.RecordData("42.42.42.42"))
@@ -53,7 +53,7 @@ class TestResolverCache(unittest.TestCase):
         self.assertEqual([], al)
         self.assertEqual(["42.42.42.42"], ad)
 
-    def atestResolveExpiredInvalidCachedFQDN(self):
+    def testResolveExpiredInvalidCachedFQDN(self):
         shuckleRecord = dns.resource.ResourceRecord("s.h.u.c.k.l.e",\
                 dns.types.Type.A, dns.classes.Class.IN,\
                 int(time.time() + 5), dns.resource.RecordData("42.42.42.42"))
@@ -92,26 +92,26 @@ class TestServer(unittest.TestCase):
         self.assertEqual([], al)
         self.assertEqual(["162.246.59.52"], ad)
 
-    def atestParallelRequest(self):
-    	helper1 = ThreadHelper(self.offline_resolver, "hestia.dance")
-    	helper2 = ThreadHelper(self.offline_resolver, "gaia.cs.umass.edu")
-    	t1 = Thread(target=helper1.run)
-    	t2 = Thread(target=helper2.run)
-    	t1.daemon = True
-    	t2.daemon = True
-    	t1.start()
-    	t2.start()
-    	t1.join()
-    	t2.join()
+    def testParallelRequest(self):
+        helper1 = ThreadHelper(self.offline_resolver, "hestia.dance")
+        helper2 = ThreadHelper(self.offline_resolver, "gaia.cs.umass.edu")
+        t1 = Thread(target=helper1.run)
+        t2 = Thread(target=helper2.run)
+        t1.daemon = True
+        t2.daemon = True
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
 
-    	self.assertEqual("hestia.dance", helper1.h)
+        self.assertEqual("hestia.dance", helper1.h)
         self.assertEqual([], helper1.al)
         self.assertEqual(["162.246.59.52"], helper1.ad)
 
         self.assertEqual("gaia.cs.umass.edu", helper2.h)
         self.assertEqual([], helper2.al)
         self.assertEqual(["128.119.245.12"], helper2.ad)
-        
+    
 
 class ThreadHelper(Thread):
 
@@ -124,7 +124,7 @@ class ThreadHelper(Thread):
         self.ad = []
 
     def run(self):
-    	self.h, self.al, self.ad = self.resolver.gethostbyname(self.hname)
+        self.h, self.al, self.ad = self.resolver.gethostbyname(self.hname)
         
 
 

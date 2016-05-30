@@ -154,6 +154,7 @@ class Resolver(object):
 
             #Analyze the response
             for answer in response.answers + response.additionals:#First get the aliases
+                print("Answer analyzing: " + str(answer.rdata.data))
                 if answer.type_ == Type.CNAME and answer.rdata.data not in aliases:
                     aliaslist.append(answer.rdata.data)
 
@@ -168,7 +169,7 @@ class Resolver(object):
             else:
                 for nameserver in response.authorities:
                     if nameserver.type_ == Type.NS:#Do a lookup for that ns?
-                        #print(nameserver.rdata.data)
+                        print(nameserver.rdata.data)
                         if self.caching:
                             self.cache.add_record(nameserver)
                         hints = [nameserver.rdata.data] + hints

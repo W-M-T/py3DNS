@@ -40,6 +40,7 @@ We do not request recursion.
 When we get a response that contains an IP for the hostname or one of its aliases, we return the hostname and aliases along
 with the IP address(es).
 
+
 CACHING:
 
 The resolver is capable of using and managing a cache.
@@ -47,22 +48,15 @@ If the cache is enabled the resolver first tries to answer the query using the e
 If this fails it proceeds performing the steps described above, but in addition, all received responses are stored in the cache.
 
 The cache can be written to a be read from human-readable JSON.
-[INSERT IETS OVER TTL]
 
 
 TRANSACTION IDS:
 
-Transaction ids are generated as follows: 
-id = (previous id + random number between 1 and 2048) modulo 25535
-The modulo 25535 makes sure that our id fits in a 16 bit integer.
-We add a random number to make the IDs less predictable.
-Using our method of id generation we are absolutely certain that we won't generate an id
-that was generated in the previous 12 (= 25535/2048) queries.
-We do not expect the server to ever serve many clients at the same time, therefore this should
-prevent collisions.
+When a transaction ID needs to be generated we pick a random number between 0 and 2^16 - 1.
+This number becomes the transaction ID.
 
-CONCUR
-RENCY:
+
+CONCURRENCY:
 
 To enable pyDNS to safely use concurrency we had to make minor adjustments.
 Multiple records being added to the cache simultaneously could be troublesome. Therefore we make use of a lock that allows
@@ -74,7 +68,16 @@ socket at a time, also making use of a lock.
 
 CHALLENGES:
 
-[INSERT IETS OVER ZONE FILES, BUGS IN HET FRAMEWORK EN BEDENK NOG WAT DINGEN]
+We have encountered a wide range of problems regarding the framework and have not been able to solve all of them.
+We suspect that one problem in the from_bytes function for CNAME records is the cause of our server behaving incorrectly
+in some use cases.
+We verified that the server retrieves the correct data from the zone file, but after we convert the message to bytes,
+send it to the client and then turn it back into a message, the contained data has changed. The lookup fails because of this.
+
+Unexpectedly, Ward was unable to work on the project for the most part of the week before the deadline because one of his
+family members passed away. This caused a lot of work to be pushed back until the last two days.
+
+We also had to deal with constant changes to the framework because it was buggy.
 
 
 LIBRARIES USED:
