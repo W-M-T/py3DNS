@@ -106,7 +106,7 @@ class Resolver(object):
             ipaddrlist ([str]): list of IP addresses of the hostname 
 
         """
-        print("==GETHOSTNAME START=================")
+        #print("==GETHOSTNAME START=================")
         aliaslist = []
         ipaddrlist = []
 
@@ -124,7 +124,7 @@ class Resolver(object):
                 ipaddrlist.append(address.rdata.data)
 
             if ipaddrlist:
-                print("We found an address in the cache!")
+                #print("We found an address in the cache!")
                 return hostname, aliaslist, ipaddrlist
 
         #Do the recursive algorithm
@@ -149,12 +149,12 @@ class Resolver(object):
             response = self.ask_server(query, hint)
 
             if response == None:#We didn't get a response for this server, so check the next one
-                print("Server at " + hint + " did not respond.")
+                #print("Server at " + hint + " did not respond.")
                 continue
 
             #Analyze the response
             for answer in response.answers + response.additionals:#First get the aliases
-                print("Answer analyzing: " + str(answer.rdata.data))
+                #print("Answer analyzing: " + str(answer.rdata.data))
                 if answer.type_ == Type.CNAME and answer.rdata.data not in aliases:
                     aliaslist.append(answer.rdata.data)
 
@@ -163,16 +163,16 @@ class Resolver(object):
                     ipaddrlist.append(answer.rdata.data)
                 
             if ipaddrlist != []:
-                print("We found an address using the recursive search!")
+                #print("We found an address using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
                 for nameserver in response.authorities:
-                    if nameserver.type_ == Type.NS:#Do a lookup for that ns?
-                        print(nameserver.rdata.data)
+                    if nameserver.type_ == Type.NS:
+                        #print(nameserver.rdata.data)
                         if self.caching:
                             self.cache.add_record(nameserver)
                         hints = [nameserver.rdata.data] + hints
 
-        print("Recursive search for " + hostname + " was a total failure")
+        #print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []

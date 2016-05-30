@@ -29,5 +29,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n[*] - Trying to shut down.")
         server.shutdown()
-        print("[*] - Shutting down.\n")
         time.sleep(1)

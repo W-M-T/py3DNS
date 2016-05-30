@@ -86,6 +86,11 @@ family members passed away. This caused a lot of work to be pushed back until th
 
 We also had to deal with constant changes to the framework because it was buggy.
 
+We intentionally left a lot of "debug prints" in the (commented) code in case you want to investigate the from_bytes bug.
+We also included a screenshot with a debug prints on that shows an occurance of the bug (see error.png).
+On the right you can see that we send two ResourceRecords in the message one with rdata.data ru.nl and
+the other with 131.174.78.60. On the left we receive two ResourceRecords with rdata.data <empty> and 49.51.49.46.
+
 
 LIBRARIES USED:
 
