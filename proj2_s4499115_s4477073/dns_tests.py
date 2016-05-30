@@ -11,6 +11,7 @@ import dns.resource
 import dns.types
 import dns.classes
 import dns.server
+import dns.consts as Consts
 
 
 """ Tests for your DNS resolver and server """
@@ -20,7 +21,7 @@ server = "localhost"
 
 class TestResolver(unittest.TestCase):
     def setUp(self):
-        self.resolver = dns.resolver.Resolver(5, False, 1000)
+        self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
 
     def testNoCacheResolveExistingFQDN(self):
         h, al, ad = self.resolver.gethostbyname("gaia.cs.umass.edu")
@@ -37,7 +38,7 @@ class TestResolver(unittest.TestCase):
 
 class TestResolverCache(unittest.TestCase):
     def setUp(self):
-        self.resolver = dns.resolver.Resolver(5, True, 10)
+        self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, True, Consts.DEFAULT_TTL)
 
     def testResolveInvalidCachedFQDN(self):
         shuckleRecord = dns.resource.ResourceRecord("s.h.u.c.k.l.e",\
@@ -68,8 +69,9 @@ class TestResolverCache(unittest.TestCase):
 
 class TestServer(unittest.TestCase):
     def setUp(self):
-        self.resolver = dns.resolver.Resolver(5, False, 10)
-        self.offline_resolver = dns.resolver.Resolver(5, False, 10, ["localhost"], False)
+        self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
+        #By offline_resolver we mean a resolver that only knows about the local server (and not about the root servers).
+        self.offline_resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, ["localhost"], False)
 
     def testSolveFQDNDirectAuthority(self):
         h1, al1, ad1 = self.offline_resolver.gethostbyname("shuckle.ru.nl")

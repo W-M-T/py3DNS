@@ -16,6 +16,7 @@ import dns.zone
 from dns.resource import ResourceRecord, ARecordData, CNAMERecordData
 from dns.classes import Class
 from dns.types import Type
+import dns.consts as Consts
 
 
 lock = Lock()
@@ -185,7 +186,7 @@ class Server(object):
         self.ttl = ttl if ttl > 0 else 0
         self.port = port
         self.done = False
-        self.resolver = dns.resolver.Resolver(5, self.caching, self.ttl)
+        self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, self.caching, self.ttl)
 
         self.zone = dns.zone.Zone()
         self.zone.read_master_file()
@@ -220,4 +221,4 @@ class Server(object):
         self.done = True
         self.socket.close()
         self.resolver.save_cache()
-        print("[+] - Shut down complete. May your framerates be high and our temperatures low.")
+        print("[+] - Shut down complete. May your framerates be high and your temperatures low.")

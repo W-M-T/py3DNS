@@ -1,4 +1,5 @@
 pyDNS: a simple DNS server and resolver
+By: Tim van Dijk S4477073 & Ward Theunisse S4499115
 
 INTRODUCTION:
 
