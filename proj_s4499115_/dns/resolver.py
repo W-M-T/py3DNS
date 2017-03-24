@@ -181,7 +181,6 @@ class Resolver(object):
             else:
                 for nameserver in response.authorities:
                     if nameserver.type_ == Type.NS:
-                        #print(nameserver.to_dict())
                         if self.caching:
                             self.cache.add_record(nameserver)
                         hints = [str(nameserver.rdata.nsdname)] + hints
