@@ -75,6 +75,27 @@ class RecordData:
     """Record Data."""
 
     @staticmethod
+    def create(type_, data):
+        """ Create a RecordData object from bytes
+        Args:
+            type_ (Type): type
+            packet (bytes): packet
+            offset (int): offset in message
+            rdlength (int): length of rdata
+            parser (int): domain name parser
+        """
+        classdict = {
+            Type.A: ARecordData,
+            Type.CNAME: CNAMERecordData,
+            Type.NS: NSRecordData,
+            Type.SOA: SOARecordData
+        }
+        if type_ in classdict:
+            return classdict[type_](data)
+        else:
+            return GenericRecordData(data)
+
+    @staticmethod
     def create_from_bytes(type_, packet, offset, rdlength):
         """Create a RecordData object from bytes.
 
@@ -191,6 +212,7 @@ class CNAMERecordData(RecordData):
     @classmethod
     def from_dict(cls, dct):
         """Create a RecordData object from dict."""
+        print(dct)
         return cls(Name(dct["cname"]))
 
 
