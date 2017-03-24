@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Tests for your DNS resolver and server"""
+
 import argparse
 import unittest
 import sys
@@ -17,10 +19,11 @@ import dns.server
 import dns.consts as Consts
 
 
-""" Tests for your DNS resolver and server """
 
-portnr = 5353
-server = "localhost"
+PORT = 5001
+SERVER = "localhost"
+
+
 
 class TestResolver(TestCase):
     def setUp(self):
@@ -136,14 +139,16 @@ class ThreadHelper(Thread):
 def run_tests():
     # Parse command line arguments
     
-    parser = ArgumentParser(description="HTTP Tests")
+    parser = ArgumentParser(description="DNS Tests")
     parser.add_argument("-s", "--server", type=str, default="localhost",
                         help="the address of the server")
     parser.add_argument("-p", "--port", type=int, default=5001,
                         help="the port of the server")
     args, extra = parser.parse_known_args()
-    portnr = args.port
-    server = args.server
+    
+    global PORT, SERVER
+    PORT = args.port
+    SERVER = args.server
     
     # Pass the extra arguments to unittest
     sys.argv[1:] = extra
