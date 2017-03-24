@@ -17,40 +17,6 @@ import dns.consts as Consts
 import threading
 import time
 
-class ResourceEncoder(json.JSONEncoder):
-    """ Conver ResourceRecord to JSON
-    
-    Usage:
-        string = json.dumps(records, cls=ResourceEncoder, indent=4)
-    """
-    def default(self, obj):
-        if isinstance(obj, ResourceRecord):
-            return {
-                "name": obj.name,
-                "type": Type.to_string(obj.type_),
-                "class": Class.to_string(obj.class_),
-                "ttl": obj.ttl,
-                "rdata": obj.rdata.data,
-                "timestamp": obj.timestamp
-            }
-        return json.JSONEncoder.default(self, obj)
-
-
-def resource_from_json(dct):
-    """ Convert JSON object to ResourceRecord
-    
-    Usage:
-        records = json.loads(string, object_hook=resource_from_json)
-    """
-    name = dct["name"]
-    type_ = Type.from_string(dct["type"])
-    class_ = Class.from_string(dct["class"])
-    ttl = dct["ttl"]
-    rdata = RecordData.create(type_, dct["rdata"])
-    timestamp = dct["timestamp"]
-    return ResourceRecord(name, type_, class_, ttl, rdata, timestamp)
-
-
 class RecordCache(object):
     """ Cache for ResourceRecords """
 
@@ -130,11 +96,11 @@ class RecordCache(object):
 
         #Load from file
         try:
-            with open(cache_file) as infile:
-                data = infile.read()
+            with open(cache_file,"r") as infile:
                 curTime = int(time.time())
                 
-                recordlist = json.loads(data, object_hook=resource_from_json)
+                dcts = json.load(infile)
+                recordlist = [ResourceRecord.from_dict(dct) for dct in dcts]
 
                 #Don't add the entries whose TTL is expired
                 recordlist = [entry for entry in recordlist if entry.ttl + entry.timestamp > curTime]
@@ -146,14 +112,15 @@ class RecordCache(object):
             print("An error has occured while loading cache from disk: " + str(e))
             self.records = []
             with open(cache_file, 'w') as outfile:
-                outfile.write(json.dumps(self.records, cls=ResourceEncoder, indent=4))
+                outfile.write(json.dumps(self.records, cls=ResourceEncoder, indent=4))#fix write
 
     def write_cache_file(self):
         """ Write the cache file to disk """
         self.cleanup()
+        dcts = [record.to_dict() for record in self.records]
         
         try:
             with open(Consts.CACHE_FILE, 'w') as outfile:
-                outfile.write(json.dumps(self.records, cls=ResourceEncoder, indent=4))
+                json.dump(dcts, outfile, indent=2)
         except IOError as e:
             print("An error has occured while writing cache to disk: " + str(e))
