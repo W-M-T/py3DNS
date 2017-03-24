@@ -1,0 +1,664 @@
+Verschillen ten opzichte van nieuwe versie:
+
+—dns_client.py—
+
+In de nieuwe versie wordt in de resolve-functie een extra add_argument aan de parser toegevoegd. Deze betreft:
+parser.add_argument("--timeout", metavar="time", type=int, default=5,                        help="resolver timeout")
+Hierdoor verschilt de aanroep van resolver ook.  In de nieuwe versie moet timeout worden meegegeven:
+
+    parser.add_argument("--timeout", metavar="time", type=int, default=5,                        help="resolver timeout")
+
+Kleine andere verschillen wat betreft layout:
+In de nieuwe versie wordt argparse aan het begin van het document geïmporteerd:
+from argparse import ArgumentParser
+
+
+In de oude versie wordt dit rechtstreeks in de main gedaan.
+
+Daarnaast wordt in de oude versie alles direct in de main uitgevoerd. In de nieuwe versie wordt gebruik gemaakt van een functie resolve() waarin alles wat in de oude main staat wordt gedaan. Deze wordt in de main van de nieuwe versie aangeroepen.
+
+—dns_tests.py—
+In de nieuwe versie worden alle externe functies eerst geïmporteerd aan het begin van het document, in de oude versie worden ze aangeroepen wanneer nodig is.
+
+In de oude versie staat: 
+Portnr = 5353
+server = “localhost”
+
+In de nieuwe versie staat:
+PORT = 5001
+SERVER = “localhost”
+
+In de nieuwe versie staat een extra test-class, namelijk:
+
+class TestCache(TestCase):    """Cache tests”""
+
+Daarnaast wordt in de nieuwe class een string meegegeven, in de oude class was dit een class. (Dit geeft geen problemen, aangezien dit geïmplementeerd moet worden)
+
+Alles wat in de oude main staat wordt nu in een functie run_tests() geplaatst, deze wordt in de main aangeroepen.
+
+Verder verschilt het volgende:
+In de oude versie wordt argparse lokaal geïmporteerd, dit wordt in de nieuwe bovenaan het document gedaan.
+
+Wat betreft code-verschillen:
+Oude versie:
+parser = argparse.ArgumentParser(description="HTTP Tests")
+
+
+Nieuwe versie:
+
+    parser = ArgumentParser(description="DNS Tests")
+
+
+De eerste parser.add_argument verschilt qua argumenten ten opzichte van de nieuwe versie. In de oude versie:
+parser.add_argument("-s", "--server", type=str, default="localhost")
+
+
+
+De nieuwe versie:
+parser.add_argument("-s", "--server", type=str, default="localhost",                        help="the address of the server")
+
+
+Dit geldt ook voor de tweede parser.add_argument:
+
+De oude versie:
+parser.add_argument("-p", "--port", type=int, default=5001)
+
+De nieuwe versie:
+    parser.add_argument("-p", "--port", type=int, default=5001,                        help="the port of the server")
+
+
+Verder wordt in de nieuwe versie globale variabelen geinitialiseerd:
+
+global PORT, SERVER    PORT = args.port    SERVER = args.server
+
+In de oude versie wordt dat zo gedaan:
+portnr = args.port
+server = args.server
+
+—dns_server.py—
+In de oude variant wordt eerst dns.server geïmporteerd, dit wordt ook gedaan in de nieuwe variant. Daarnaast wordt in de nieuwe variant ook bovenaan argparse geïmporteerd, dit wordt in de oude variant lokaal gebruikt.
+Weer geld qua layout: alles wat in de oude main staat wordt nu in een aparte functie run_server() gezet. Deze wordt vervolgens in de main aangeroepen.
+—in map DNS - cache.py —
+In de oude file staat een extra class ResourceEncoder met twee functies: een default functie en een resource_from_json functie. Deze staan niet in de nieuwe file, maar staan daarentegen in de class ResourceRecord van resource.py. Hier heten ze to_dict() en from_dict. Deze worden dus vanuit deze class geïmporteerd.
+In de oude file zijn read_cache_file en write_cahce_file nog niet geïmplementeerd. In de nieuwe wel, en als volgt:
+    def read_cache_file(self):        """Read the cache file from disk"""        dcts = []        try:            with open("cache", "r") as file_:                dcts = json.load(file_)        except:            print("could not read cache")        self.records = [ResourceRecord.from_dict(dct) for dct in dcts]
+
+En
+    def write_cache_file(self):        """Write the cache file to disk"""        dcts = [record.to_dict() for record in self.records]        try:            with open("cache", "w") as file_:                json.dump(dcts, file_, indent=2)        except:            print("could not write cache")
+
+
+—classes.py—
+In het oude bestand staan twee extra functies en een variabele toekenning by_value:
+by_value = dict([(y, x) for x, y in by_string.items()])
+@staticmethod
+def to_string(class_):
+return Class.by_value[class_]
+@staticmethod
+def from_string(string):
+return Class.by_string[string]
+
+In het nieuwe bestand staan deze niet, maar staat daarentegen
+    def __str__(self):        return self.name
+Daarnaast wordt geïmporteerd: 
+from enum import IntEnum
+
+En staat in de class-definitie:
+class Class(IntEnum):
+
+—message.py—
+Wat betreft imports:
+In de nieuwe file:
+import structfrom dns.classes import Classfrom dns.name import Namefrom dns.resource import ResourceRecordfrom dns.rtypes import Type
+In de oude file:
+import socket
+import struct
+from dns.classes import Class
+from dns.domainname import Parser, Composer
+from dns.resource import ResourceRecord
+from dns.types import Type
+
+Oftewel: socket wordt in oud geïmporteerd, waar deze in nieuw niet wordt geïmporteerd. Daarnaast zijn sommige bestandsnamen en geïmporteerde klassen anders.
+De def __init__ verschilt enigszins ten opzichte van oud.
+Nieuw:
+def __init__(self, header, questions=None, answers=None, authorities=None,                 additionals=None):
+
+Oud:
+def __init__(self, header, questions=[], answers=[], authorities=[], additionals=[]):
+
+Daarnaast staat hierbij bij nieuw:
+ if questions is None:            questions = []        if answers is None:            answers = []        if authorities is None:            authorities = []        if additionals is None:            additionals = []
+
+Dit staat niet bij oud, vanwege het verschil in __init__ definitie.
+
+De definitie van to_bytes verschilt in dit punt:
+Oud:
+composer = Composer()
+
+Nieuw:
+        compress = {}
+
+In plaats van composer wordt er nu gebruik gemaakt van een dictionary. Dit heeft gevolgen voor de rest van de functies in to_bytes. De definities van de functies zijn wel aan elkaar gelijk, met compress in plaats van composer.
+De functie from_bytes verschilt ook in nieuw ten opzichte van oud, doordat er in name/domainname geen definitie van composer of parser is.  De verschillen in deze functie zijn als volgt:
+In oud wordt eerst een Parser aangemaakt:
+parser = Parser()
+
+Dit is niet het geval in nieuw.
+Verder is de functie vrijwel gelijk in oud en nieuw, behalve dat in de for-loops de parser in oud wordt meegegeven:
+answer, offset = ResourceRecord.from_bytes(packet, offset, parser)
+
+In nieuw is dat niet het geval:
+
+            answer, offset = ResourceRecord.from_bytes(packet, offset)
+
+
+In de classmethod from_bytes is een verschil, in oud staat:
+if len(packet) < 12:
+raise ShortHeader
+
+
+En in nieuw:
+            raise ValueError("header is too short")
+
+Daarnaast verschilt:
+Oud:
+@property
+def qr(self):
+return self._flags & (1 << 15)
+
+Nieuw:
+
+    @property    def qr(self):        """Get QR flag."""        return (self._flags >> 15) & 0b1
+
+Oud:
+@property
+def opcode(self):
+return (self._flags & (((1 << 4) - 1) << 11)) >> 11
+@opcode.setter
+def opcode(self, value):
+if value > 0b1111:
+raise ValueError("invalid opcode")
+self._flags &= ~(((1 << 4) - 1) << 11)
+self._flags |= value << 11
+Nieuw:
+  @property    def opcode(self):        """Get Opcode."""        return (self._flags >> 11) & 0b1111    @opcode.setter    def opcode(self, value):        """Set Opcode."""        if value > 0b1111:            raise ValueError("invalid opcode")        self._flags &= ~(15 << 11)        self._flags |= value << 11
+Oud:
+@property
+def aa(self):
+return self._flags & (1 << 10)
+
+Nieuw:
+
+  @property    def aa(self):        """Get aa flag."""        return (self._flags >> 10) & 0b1
+
+Oud:
+@property
+def tc(self):
+return self._flags & (1 << 9)
+Nieuw:
+@property    def tc(self):        """Get tc flag."""        return (self._flags >> 9) & 0b1
+Oud:
+@property
+def rd(self):
+return self._flags & (1 << 8)
+
+Nieuw:
+
+    @property    def rd(self):        """Get rd flag."""        return (self._flags >> 8) & 0b1
+
+Oud:
+@property
+def ra(self):
+return self._flags & (1 << 7)
+
+Nieuw:
+@property    def ra(self):        """Get ra flag."""        return (self._flags >> 7) & 0b1
+
+Oud:
+@property
+def z(self):
+return (self._flags & (((1 << 3) - 1) << 4) >> 4)
+@z.setter
+def z(self, value):
+if value:
+raise ValueError("non-zero zero flag")
+
+Nieuw:
+    @property    def z(self):        """Get data in reserved field."""        return (self._flags  >> 4) & 0b111
+
+Oud:
+@property
+def rcode(self):
+return self._flags & ((1 << 4) - 1)
+@rcode.setter
+def rcode(self, value):
+if value > 0b1111:
+raise ValueError("invalid return code")
+self._flags &= ~((1 << 4) - 1)
+self._flags |= value
+Nieuw:
+ @property    def rcode(self):        """Get RCODE."""        return self._flags & 0b1111    @rcode.setter    def rcode(self, value):        """Set RCODE."""        if value > 0b1111:            raise ValueError("invalid return code")        self._flags &= ~0b1111        self._flags |= value
+Er is een verschil in de klasdefinitie van Question: In oud wordt een object als argument meegegeven, terwijl dit in nieuw niet het geval is.
+Verschil in to_bytes functie. Ook hier geld dat in oud gebruik is gemaakt van een composer, terwijl in nieuw gebruik wordt gemaakt van een dictionary, genaamd compress. Zie onderstaande code:
+Oud:
+def to_bytes(self, offset, composer):
+""" Convert Question to bytes """
+bqname = composer.to_bytes(offset, [self.qname])
+bqtype = struct.pack("!H", self.qtype)
+bqclass = struct.pack("!H", self.qclass)
+return bqname + bqtype + bqclass
+
+Nieuw:
+
+    def to_bytes(self, offset, compress):        """Convert Question to bytes."""        bqname = self.qname.to_bytes(offset, compress)        bqtype = struct.pack("!H", self.qtype)        bqclass = struct.pack("!H", self.qclass)        return bqname + bqtype + bqclass
+
+De from_bytes methode verschilt ook.
+In oud wordt een parser als argument meegegeven en wordt vervolgens de from_byte functie van parser aangeroepen, met een extra argument. In nieuw wordt de from_bytes functie van de Name-class aangeroepen. Daarnaast verschillen de qtype en qclass toekenning. In oud werd eerst qname gelijk gesteld aan qnames[0] en werd vervolgens de struct geunpacked. In nieuw wordt dit direct in de unpack gedaan.
+Oude code:
+@classmethod
+    def from_bytes(cls, packet, offset, parser):
+        """ Convert Question from bytes """
+        qnames, offset = parser.from_bytes(packet, offset, 1)
+        qname = qnames[0]
+        qtype, qclass = struct.unpack_from("!2H", packet, offset)
+        return cls(qname, qtype, qclass), offset + 4
+Nieuwe code:
+ @classmethod    def from_bytes(cls, packet, offset):        """Convert Question from bytes."""        qname, offset = Name.from_bytes(packet, offset)        qtype = Type(struct.unpack_from("!H", packet, offset)[0])        qclass = Class(struct.unpack_from("!H", packet, offset + 2)[0])        return cls(qname, qtype, qclass), offset + 4
+
+—name.py (domainname.py in oud) — 
+Op het eerste oog lijken deze classes totaal van elkaar te verschillen. Dit blijkt echter niet het geval: de functies zijn slechts op een andere manier over het document verdeeld.
+Het eerste verschil is dat er in nieuw de volgende definitie zit:
+ def __init__(self, hostname):        """Initialize a domain name from a name or list of labels.        Args:            hostname (str/[str]): either a domain name or a list of labels        """        if isinstance(hostname, str):            self.labels = hostname.split(".")            if not self.labels[-1]:                del self.labels[-1]        elif isinstance(hostname, list):            self.labels = hostname        else:            raise TypeError
+Blijkbaar wordt hier een verzameling van labels geinitialiseerd aan de hand van de gegeven hostname (een string representerende een domein, of een list van labels).
+Het volgende verschil is dat er een nieuw een functie is om equality te checken:
+def __eq__(self, other):        if isinstance(other, Name):            return ([l.lower() for l in self.labels] ==                    [l.lower() for l in other.labels])        else:            return False
+Daarnaast is er een functie voor de string representatie van Name:
+ def __str__(self):
+        result = ""
+        for label in self.labels:
+            result += label + "."
+        return result
+ De bovenstaande functies zijn in de oude uitwerking hoogst waarschijnlijk in een andere file gedefinieerd.
+
+Verder bevat de oude variant een composer met de functie to_bytes en een class parser met een functie from_bytes. Deze functionaliteit komt overeen met de to_bytes en from_bytes functies in nieuw. In nieuw staan deze niet in een aparte klasse gedefinieerd.
+Ondanks het feit dat de functionaliteit min of meer hetzelfde is, verschilt de implementatie van de functies wil zodanig, dat ik deze in zijn geheel hier kopieer zodat je de verschillen kunt zien:
+Oud:
+lass Composer(object):
+def __init__(self):
+self.offsets = dict()
+def to_bytes(self, offset, dnames):
+# Convert each domain name in to bytes
+result = b""
+for i, dname in enumerate(dnames):
+# Split domain name into labels
+labels = dname.split(".")
+# Determine keys of subdomains in offset dict
+keys = []
+for label in reversed(labels):
+name = label
+if keys:
+name += "." + keys[-1]
+keys.append(name)
+keys.reverse()
+# Convert label to bytes
+add_null = True
+for j, label in enumerate(labels):
+if keys[j] in self.offsets:
+offset = self.offsets[keys[j]]
+pointer = (3 << 14) + offset
+result += struct.pack("!H", pointer)
+add_null = False
+offset += 2
+break
+else:
+self.offsets[keys[j]] = offset
+result += struct.pack("!B{}s".format(len(label)),
+len(label),
+label)
+offset += 1 + len(label)
+# Add null character at end
+if add_null:
+result += b"\x00"
+offset += 1
+return result
+Nieuw:
+def to_bytes(self, offset, compress=None):        """Convert Name to bytes."""        result = b""        add_null = True        for i, label in enumerate(self.labels):            name = ".".join(self.labels[i:]).lower()            if compress is not None and name in compress:                pointer = compress[name]                result += struct.pack("!H", (3 << 14) + pointer)                add_null = False                break            else:                if compress is not None:                    compress[name] = offset                blabel = label.encode("utf-8")                result += struct.pack("!B{}s".format(len(blabel)),                                      len(blabel), blabel)                offset += 1 + len(blabel)        if add_null:            result += b"\x00"        return result
+Oud:
+class Parser(object):
+def __init__(self):
+self.labels = dict()
+def from_bytes(self, packet, offset, num):
+begin_offset = offset
+dnames = []
+# Read the domain names
+for i in range(num):
+# Read a new domain name
+dname = ""
+prev_offsets = []
+done = False
+while done is False:
+# Read length of next label
+llength = struct.unpack_from("!B", packet, offset)[0]
+# Done reading domain when length is zero
+if llength == 0:
+offset += 1
+break
+# Compression label
+elif (llength >> 6) == 3:
+new_offset = offset + 2
+target = struct.unpack_from("!H", packet, offset)[0]
+target -= 3 << 14
+label = self.labels[target]
+done = True
+# Normal label
+else:
+new_offset = offset + llength + 1
+label = struct.unpack_from("{}s".format(llength),
+packet, offset+1)[0]
+# Add label to dictionary
+self.labels[offset] = label
+for prev_offset in prev_offsets:
+self.labels[prev_offset] += "." + label
+prev_offsets.append(offset)
+# Update offset
+offset = new_offset
+# Append label to domain name
+if len(dname) > 0:
+dname += "."
+dname += label
+# Append domain name to list
+dnames.append(dname)
+return dnames, offset
+
+Nieuw:
+@classmethod    def from_bytes(cls, packet, offset):        """Create Name from bytes."""        labels = []        hops = 0        while True:            label_length = struct.unpack_from("!B", packet, offset)[0]            if label_length < 64:                offset += 1                blabel = packet[offset:offset + label_length]                if blabel:                    labels.append(blabel.decode("utf-8"))                offset += label_length                if hops == 0:                    next_offset = offset                if label_length == 0:                    break            elif label_length >= 192:                pointer = struct.unpack_from("!H", packet, offset)[0] - (3 << 14)                if hops == 0:                    next_offset = offset + 2                hops += 1                offset = pointer            else:                raise ValueError        return cls(labels), next_offset
+
+—codes.py—
+In oud wordt bij de klasse-definitie een object meegegeven:
+class RCode(object):
+
+In nieuw wordt eerst IntEnum geïmporteerd uit enum en wordt deze vervolgens aan de klasse-definitie meegegeven:
+from enum import IntEnumclass RCode(IntEnum):
+Verder zijn er bij oud nog een aantal string functies, namelijk: by_string met de springpaarden van de errorcodes, by_value voor het koppelen van de errorstrings en waarden in een dict, to_string, en from_string:
+by_string = {
+"NoError": NoError,
+"FormErr": FormErr,
+"ServFail": ServFail,
+"NXDomain": NXDomain,
+"NotImp": NotImp,
+"Refused": Refused,
+"YXDomain": YXDomain,
+"YXRRSet": YXRRSet,
+"NXRRSet": NXRRSet,
+"NotAuth": NotAuth,
+"NotZone": NotZone,
+"BADVERS": BADVERS,
+"BADSIG": BADSIG,
+"BADKEY": BADKEY,
+"BADTIME": BADTIME,
+"BADMODE": BADMODE,
+"BADNAME": BADNAME,
+"BADALG": BADALG,
+"BADTRUNC": BADTRUNC
+}
+by_value = dict([(y, x) for x, y in by_string.items()])
+@staticmethod
+def to_string(rcode):
+return RCode.by_value[rcode]
+@staticmethod
+def from_string(string):
+return RCode.by_string[string]
+In nieuw is dit niet het geval, hier is simpelweg gedefinieerd:
+def __str__(self):        return self.name
+—resolver.py—
+Deze verschillen eigenlijk totaal van elkaar. De werking is wel aan elkaar gelijk, maar de verschillen zijn zo groot dat ik eigenlijk bijna per code regel de verschillen op zou moeten noemen. Vandaar dat het handiger is om deze implementaties compleet naast elkaar te houden.
+
+—resource.py—
+Allereerst de imports: in oud wordt ook time geïmporteerd, dit is niet het geval in nieuw. In nieuw vindt ook de volgende import plaats: 
+from dns.name import Name
+Dit gebeurt niet in oud. Waarschijnlijk is dat zo, omdat in oud gebruik wordt gemaakt van de composer en parser classes van domainname.py, terwijl in nieuw de functionaliteit van deze direct in name.py staat.
+Wat betreft de class ResourceRecord:
+De unit-functie verschilt, ook qua argumenten:
+In oud wordt er een timestamp=none meegegeven en wordt in de body timestamp als volgt geinitialiseerd:
+self.timestamp = timestamp if timestamp != None else (int)(time.time())
+
+In nieuw komt timestamp niet in de init voor.
+Wat betreft de to_bytes definitie:
+Qua argumenten verschilt het doordat in oud gebruik gemaakt wordt van een composer, terwijl in nieuw gebruik wordt gemaakt van een dictionary genaamd compress. Hierdoor verschilt ook de implementatie van deze functie op enkele kleine punten namelijk:
+In oud staat:
+record = composer.to_bytes(offset, [self.name])
+
+Terwijl in nieuw staat:
+        record = self.name.to_bytes(offset, compress)
+
+En in oud staat:
+rdata = self.rdata.to_bytes(offset, composer)
+
+Terwijl in nieuw staat:
+        rdata = self.rdata.to_bytes(offset, compress)
+
+Daarnaast verschilt de from_bytes functie in nieuw ten opzichte van oud:
+Allereerst wordt in oud een parser meegegeven als argument, terwijl in nieuw gebruik wordt gemaakt van de from_bytes functie van name. Daarnaast is er nog een enkel verschil in de body van het algoritme. Ter volledigheid en duidelijkheid zet ik ze hier onder elkaar.
+Oud:
+@classmethod
+def from_bytes(cls, packet, offset, parser):
+""" Convert ResourceRecord from bytes """
+names, offset = parser.from_bytes(packet, offset, 1)
+name = names[0]
+type_, class_, ttl, rdlength = struct.unpack_from("!HHIH", packet, offset)
+offset += 10
+rdata = RecordData.from_bytes(type_, packet, offset, rdlength, parser)
+offset += rdlength
+return cls(name, type_, class_, ttl, rdata), offset
+Nieuw:
+ @classmethod    def from_bytes(cls, packet, offset):        """Convert ResourceRecord from bytes."""        name, offset = Name.from_bytes(packet, offset)        type_ = Type(struct.unpack_from("!H", packet, offset)[0])        class_ = Class(struct.unpack_from("!H", packet, offset + 2)[0])        ttl, rdlength = struct.unpack_from("!iH", packet, offset + 4)        offset += 10        rdata = RecordData.create_from_bytes(type_, packet, offset, rdlength)        offset += rdlength        return cls(name, type_, class_, ttl, rdata), offset
+Daarnaast staat er in nieuw een to_dict functie en een from_dict functie die niet in oud staan, namelijk:
+
+  def to_dict(self):        """Convert ResourceRecord to dict."""        return {"name" : str(self.name),                "type" : str(self.type_),                "class" : str(self.class_),                "ttl" : self.ttl,                "rdata" : self.rdata.to_dict()}    @classmethod    def from_dict(cls, dct):        """Convert ResourceRecord from dict."""        type_ = Type[dct["type"]]        rdata = RecordData.create_from_dict(type_, dct["rdata"])        return cls(Name(dct["name"]), type_, Class[dct["class"]], dct["ttl"],                   rdata)
+In de class RecordData zijn ook een aantal belangrijke verschillen:
+In nieuw is geen init-functie terwijl deze er in oud wel is, en als volgt:
+def __init__(self, data):
+""" Initialize the record data
+Args:
+data (str): data
+"""
+self.data = data
+
+De andere functie van de class RecordData lijken op het eerste oog gelijk, maar dit bedriegt: Allereerst verschillen de definitienamen en argumenten:
+In oud:
+def create(type_, data):
+
+In nieuw:
+    def create_from_dict(type_, dct):
+
+Ter illustratie volgen hier de volledige definities van deze functies, waarna ik de verschillen bespreek:
+Oud:
+@staticmethod
+def create(type_, data):
+""" Create a RecordData object from bytes
+Args:
+type_ (Type): type
+packet (bytes): packet
+offset (int): offset in message
+rdlength (int): length of rdata
+parser (int): domain name parser
+"""
+classdict = {
+Type.A: ARecordData,
+Type.CNAME: CNAMERecordData,
+Type.NS: NSRecordData,
+Type.AAAA: AAAARecordData
+}
+if type_ in classdict:
+return classdict[type_](data)
+else:
+return GenericRecordData(data)
+Nieuw:
+  @staticmethod    def create_from_dict(type_, dct):        """Create a RecordData object from dict."""        classdict = {            Type.A: ARecordData,            Type.CNAME: CNAMERecordData,            Type.NS: NSRecordData,            Type.SOA: SOARecordData        }        if type_ in classdict:            return classdict[type_].from_dict(dct)        else:            return GenericRecordData.from_dict(dct)
+In beide functie-definities wordt dus gebruik gemaakt van een classdict. Hierin zit een belangrijk verschil, namelijk het laatste element. In oud is dit:
+Type.AAAA: AAAARecordData
+
+Terwijl dit in nieuw is:
+            Type.SOA: SOARecordData
+
+Daarnaast verschillen de return statements:
+In oud staat aan het eind van de statements (data): dit is of een typeconversion of een argument. In nieuw staat in plaats van (data): .from_dict(dct).
+
+Wat betreft de from_bytes-functie: hier verschilt de benaming en de argumenten:
+Oud:
+def from_bytes(type_, packet, offset, rdlength, parser):
+
+Nieuw:
+    def create_from_bytes(type_, packet, offset, rdlength):
+
+Qua argumenten is parser dus het extra argument dat in oud zit, maar niet in nieuw.
+Ook in deze functie geldt weer dat de classdict in de twee versies van elkaar verschillen, namelijk het laatste argument. In oud is dit:
+Type.AAAA: AAAARecordData
+
+En in nieuw is dit:
+            Type.SOA: SOARecordData
+
+De return-statements verschillen hier ook, maar nu in het feit dat in oud ook de parser als argument in de from_bytes wordt meegegeven, terwijl dit in nieuw niet het geval is.
+Verder verschilt. De ARecordData class enigszins in oud ten opzichte van nieuw:
+Allereerst de to_bytes functie. In oud wordt er een composer als argument meegegeven, terwijl in nieuw een dictionary (met naam compress) wordt meegegeven.
+Daarnaast is de return statement anders, waar in oud staat:
+return socket.inet_aton(self.data)
+
+Staat in nieuw:
+        return socket.inet_aton(self.address)
+
+Ook de from_bytes definitie verschilt. In oud wordt een parser als argument meegegeven, terwijl dit in nieuw niet het geval is. Verder staat in oud:
+data = socket.inet_ntoa(packet[offset:offset+4])
+return cls(data)
+Terwijl in nieuw:
+ address = socket.inet_ntoa(packet[offset:offset+4])        return cls(address)
+Deze address variabele komt in nieuw ook in de init-functie van ARecordData voor (oud heeft geen init):
+ def __init__(self, address):        """Create RecordData for A type.        Args:            address (str): address.        """        self.address = address
+Verder heeft nieuw ook nog een extra to_dict en from_dict functie, namelijk:
+
+    def to_dict(self):        """Convert to dict."""        return {"address" : self.address}    @classmethod    def from_dict(cls, dct):        """Create a RecordData object from dict."""        return cls(dct["address"])
+
+Voor de klasse CNAMERecordData geldt ongeveer hetzelfde: ook hier heeft nieuw een init-functie en een to_dict en een from_dict, namelijk:
+ def to_dict(self):        """Convert to dict."""        return {"cname" : str(self.cname)}    @classmethod    def from_dict(cls, dct):        """Create a RecordData object from dict."""        return cls(Name(dct["cname"]))
+En:
+def __init__(self, cname):        """Create RecordData for CNAME type.        Args:            cname (Name): cname.        """        self.cname = cname
+Daarnaast verschillen de to_bytes en from_bytes functies enigszins. Het is vanwege de korte functies sneller en duidelijker om deze hier te plaatsen zonder verdere uitleg:
+Oud:
+def to_bytes(self, offset, composer):
+""" Convert to bytes
+Args:
+offset (int): offset in message
+composer (Composer): domain name composer
+"""
+return composer.to_bytes(offset, [self.data])
+@classmethod
+def from_bytes(cls, packet, offset, rdlength, parser):
+""" Create a RecordData object from bytes
+Args:
+packet (bytes): packet
+offset (int): offset in message
+rdlength (int): length of rdata
+parser (int): domain name parser
+"""
+names, offset = parser.from_bytes(packet, offset, 1)
+data = names[0]
+return cls(data)
+Nieuw:
+    def to_bytes(self, offset, compress):        """Convert to bytes.        Args:            offset (int): offset in packet.            compress (dict): dict from domain names to pointers.        """        return self.cname.to_bytes(offset, compress)    @classmethod    def from_bytes(cls, packet, offset, rdlength):        """Create a RecordData object from bytes.        Args:            packet (bytes): packet.            offset (int): offset in message.            rdlength (int): length of rdata.        """        cname, offset = Name.from_bytes(packet, offset)        return cls(cname)
+Voor de klasse NSRecordData geldt ook ongeveer hetzelfde, dus een kopie van de implementaties van haar functies zou moeten volstaan:
+Oud:
+def to_bytes(self, offset, composer):
+""" Convert to bytes
+Args:
+offset (int): offset in message
+composer (Composer): domain name composer
+"""
+return composer.to_bytes(offset, [self.data])
+@classmethod
+def from_bytes(cls, packet, offset, rdlength, parser):
+""" Create a RecordData object from bytes
+Args:
+packet (bytes): packet
+offset (int): offset in message
+rdlength (int): length of rdata
+parser (int): domain name parser
+"""
+names, offset = parser.from_bytes(packet, offset, 1)
+data = names[0]
+return cls(data)
+Nieuw:
+def __init__(self, nsdname):        """Create RecordData for NS type.        Args:            nsdname (Name): nsdname.        """        self.nsdname = nsdname    def to_bytes(self, offset, compress):        """Convert to bytes.        Args:            offset (int): offset in packet.            compress (dict): dict from domain names to pointers.        """        return self.nsdname.to_bytes(offset, compress)    @classmethod    def from_bytes(cls, packet, offset, rdlength):        """Create a RecordData object from bytes.        Args:            packet (bytes): packet.            offset (int): offset in message.            rdlength (int): length of rdata.        """        nsdname, offset = Name.from_bytes(packet, offset)        return cls(nsdname)    def to_dict(self):        """Convert to dict."""        return {"nsdname" : str(self.nsdname)}    @classmethod    def from_dict(cls, dct):        """Create a RecordData object from dict."""        return cls(Name(dct["nsdname"]))
+
+Vervolgens is er de klasse AAAARecordData in oud. In plaats van deze is er in nieuw een andere klasse SOERecordData, die eigenlijk qua implementatie compleet verschilt. Hieronder de implementaties:
+Oud:
+class AAAARecordData(RecordData):
+def to_bytes(self, offset, composer):
+""" Convert to bytes
+Args:
+offset (int): offset in message
+composer (Composer): domain name composer
+"""
+return socket.inet_pton(socket.AF_INET6, self.data)
+@classmethod
+def from_bytes(cls, packet, offset, rdlength, parser):
+""" Create a RecordData object from bytes
+Args:
+packet (bytes): packet
+offset (int): offset in message
+rdlength (int): length of rdata
+parser (int): domain name parser
+"""
+data = socket.inet_ntop(socket.AF_INET6, packet[offset:offset+16])
+return cls(data)
+
+Nieuw:
+class SOARecordData(RecordData):    """Record data for SOA type.    See RFC 1035 3.3.13.    """    def __init__(self, mname, rname, serial, refresh, retry, expire, minimum):        """Create RecordData for SOA type.        Args:            mname (Name): mname.            rname (Name): rname.            serial (int): serial.            refresh (int): refresh.            retry (int): retry.            expire (int): expire.            minimum (int): minimum.        """        self.mname = mname        self.rname = rname        self.serial = serial        self.refresh = refresh        self.retry = retry        self.expire = expire        self.minimum = minimum    def to_bytes(self, offset, compress):        """Convert to bytes.        Args:            offset (int): offset in packet.            compress (dict): dict from domain names to pointers.        """        data = self.mname.to_bytes(offset, compress)        data += self.rname.to_bytes(len(data), compress)        data += struct.pack("!I", self.serial)        data += struct.pack("!i", self.refresh)        data += struct.pack("!i", self.retry)        data += struct.pack("!i", self.expire)        data += struct.pack("!I", self.minimum)    @classmethod    def from_bytes(cls, packet, offset, rdlength):        """Create a RecordData object from bytes.        Args:            packet (bytes): packet.            offset (int): offset in message.            rdlength (int): length of rdata.        """        mname, offset = Name.from_bytes(packet, offset)        rname, offset = Name.from_bytes(packet, offset)        serial = struct.unpack_from("!I", packet, offset)[0]        refresh = struct.unpack_from("!i", packet, offset + 4)[0]        retry = struct.unpack_from("!i", packet, offset + 8)[0]        expire = struct.unpack_from("!i", packet, offset + 12)[0]        minimum = struct.unpack_from("!I", packet, offset + 16)[0]        return cls(mname, rname, serial, refresh, retry, expire, minimum), offset + 20    def to_dict(self):        """Convert to dict."""        return {"mname" : str(self.mname), "rname" : str(self.rname),                "serial" : self.serial, "refresh" : self.refresh,                "retry" : self.retry, "expire" : self.expire,                "minimum" : self.minimum}    @classmethod    def from_dict(cls, dct):        """Create a RecordData object from dict."""        return cls(Name(dct["mname"]), Name(dct["rname"]), dct["serial"],                   dt["refresh"], dct["retry"], dct["expire"], dct["minimum"])
+Vervolgens is er de klasse GenericRecordData, waarvoor eigenlijk hetzelfde commentaar geldt als alle vorige (behalve de vorige die compleet verschilde), waardoor een vergelijking van implementaties volstaat:
+Oud:
+class GenericRecordData(RecordData):
+def to_bytes(self, offset, composer):
+""" Convert to bytes
+Args:
+offset (int): offset in message
+composer (Composer): domain name composer
+"""
+return self.data
+@classmethod
+def from_bytes(cls, packet, offset, rdlength, parser):
+""" Create a RecordData object from bytes
+Args:
+packet (bytes): packet
+offset (int): offset in message
+rdlength (int): length of rdata
+parser (int): domain name parser
+"""
+data = packet[offset:offset+rdlength]
+return cls(data)
+Nieuw:
+class GenericRecordData(RecordData):    """Generic Record Data (for other types)."""    def __init__(self, data):        """Create RecordData for generic data.        Args:            data (bytes): record data.        """        self.data = data    def to_bytes(self, offset, compress):        """Convert to bytes.        Args:            offset (int): offset in packet.            compress (dict): dict from domain names to pointers.        """        return self.data    @classmethod    def from_bytes(cls, packet, offset, rdlength):        """Create a RecordData object from bytes.        Args:            packet (bytes): packet.            offset (int): offset in message.            rdlength (int): length of rdata.        """        data = packet[offset:offset+rdlength]        return cls(data)    def to_dict(self):        """Convert to dict."""        return {"data" : self.data}    @classmethod    def from_dict(cls, dct):        """Create a RecordData object from dict."""        return cls(dct["data"])
+—types.py— 
+De implementaties lijken in nieuw en oud erg op elkaar. 
+Allereerst wordt in de klasse-definitie in oud een object meegegeven, terwijl in nieuw een IntEnum wordt meegegeven die van te voren wordt geïmporteerd door middel van from enum import IntEnum.
+Daarnaast staan er in oud enkele string methodes, die in nieuw direct worden gevangen door middel van def __ str__(self): return self.name .
+Er is echter wel een verschil in enumeratiewaarden, de oude variant blijkt uitgebreider dan de nieuwe. Enumeraties die in oud zitten maar niet in nieuw:
+WKS = 11
+HINFO = 13
+MINFO = 14
+
+—server.py—
+Deze verschilt in nieuw vrijwel totaal van oud.Waar in oud min of meer de server functionaliteit al geheel is geïmplementeerd, moet deze als opdracht in nieuw zelf worden geïmplementeerd. Om te vergelijken is het handig om deze files zelf even naast elkaar te leggen.
+—test.txt —
+In oud staat een test.txt, terwijl in nieuw een hele map aan testbestanden staat.
+
+—zone.py—
+Deze zijn vrijwel hetzelfde, de enige verschillen zijn de volgende:
+In oud is de definitie van read_master_file al geïmplementeerd, terwijl deze in nieuw nog geïmplementeerd moet worden.
+Daarnaast staan in oud enkele extra functies die niet in nieuw staan, namelijk:
+Time_to_seconds_helper
+Time_to_seconds
+load_and_parse
+Verder wordt in oud een reeks imports gedaan, terwijl in nieuw geen imports worden gedaan. Deze imports zijn:
+import re
+import dns.zone
+import dns.consts as Consts
+import dns.classes
+import dns.resource
