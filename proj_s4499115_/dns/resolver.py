@@ -16,7 +16,7 @@ from dns.classes import Class
 from dns.rtypes import Type
 from dns.cache import RecordCache
 import dns.cache
-import dns.message
+from dns.message import Message, Question, Header
 import dns.rcodes
 import dns.consts
 
@@ -77,7 +77,7 @@ class Resolver(object):
         try:
             sock.sendto(query.to_bytes(), (server, 53))
             data = sock.recv(1024)
-            response = dns.message.Message.from_bytes(data)
+            response = Message.from_bytes(data)
             if response.header.ident != query.header.ident:
                 return None
             
@@ -138,12 +138,12 @@ class Resolver(object):
             #Build the query to send to that server
             identifier = randint(0, 65535)
             
-            question = dns.message.Question(hostname, Type.A, Class.IN)
-            header = dns.message.Header(identifier, 0, 1, 0, 0, 0)
+            question = Question(hostname, Type.A, Class.IN)
+            header = Header(identifier, 0, 1, 0, 0, 0)
             header.qr = 0
             header.opcode = 0
             header.rd = 0
-            query = dns.message.Message(header, [question])
+            query = Message(header, [question])
 
             #Try to get a response
             response = self.ask_server(query, hint)
