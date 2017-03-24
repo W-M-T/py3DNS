@@ -5,6 +5,9 @@ import unittest
 import sys
 import time
 from threading import Thread
+from unittest import TestCase
+
+from argparse import ArgumentParser
 
 import dns.resolver
 import dns.resource
@@ -19,7 +22,7 @@ import dns.consts as Consts
 portnr = 5353
 server = "localhost"
 
-class TestResolver(unittest.TestCase):
+class TestResolver(TestCase):
     def setUp(self):
         self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
 
@@ -36,7 +39,7 @@ class TestResolver(unittest.TestCase):
         self.assertEqual([], ad)
 
 
-class TestResolverCache(unittest.TestCase):
+class TestResolverCache(TestCase):
     def setUp(self):
         self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, True, Consts.DEFAULT_TTL)
 
@@ -67,7 +70,7 @@ class TestResolverCache(unittest.TestCase):
         self.assertEqual([], al)
         self.assertEqual([], ad)
 
-class TestServer(unittest.TestCase):
+class TestServer(TestCase):
     def setUp(self):
         self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
         #By offline_resolver we mean a resolver that only knows about the local server (and not about the root servers).
@@ -130,12 +133,14 @@ class ThreadHelper(Thread):
         
 
 
-if __name__ == "__main__":
+def run_tests():
     # Parse command line arguments
-    import argparse
-    parser = argparse.ArgumentParser(description="HTTP Tests")
-    parser.add_argument("-s", "--server", type=str, default="localhost")
-    parser.add_argument("-p", "--port", type=int, default=5001)
+    
+    parser = ArgumentParser(description="HTTP Tests")
+    parser.add_argument("-s", "--server", type=str, default="localhost",
+                        help="the address of the server")
+    parser.add_argument("-p", "--port", type=int, default=5001,
+                        help="the port of the server")
     args, extra = parser.parse_known_args()
     portnr = args.port
     server = args.server
@@ -145,3 +150,7 @@ if __name__ == "__main__":
 
     # Start test suite
     unittest.main()
+
+
+if __name__ == "__main__":
+    run_tests()

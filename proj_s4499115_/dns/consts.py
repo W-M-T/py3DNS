@@ -21,7 +21,6 @@ CACHE_FILE = "cache.json"
 #Relative path to the zone file's location on disk
 ZONE_FILE = "zone.txt"
 
-#Default timeout for all resolvers
 DEFAULT_TIMEOUT = 5
 
 #Default TTL for all cached records

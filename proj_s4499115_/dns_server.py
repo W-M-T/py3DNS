@@ -5,13 +5,15 @@
 This script contains the code for starting a DNS server.
 """
 
-import dns.server
+from dns.server import Server
 import time
+from argparse import ArgumentParser
 
-if __name__ == "__main__":
+
+def run_server():
     # Parse arguments
-    import argparse
-    parser = argparse.ArgumentParser(description="DNS Server")
+    
+    parser = ArgumentParser(description="DNS Server")
     parser.add_argument("-c", "--caching", action="store_true",
             help="Enable caching")
     parser.add_argument("-t", "--ttl", metavar="time", type=int, default=0, 
@@ -21,7 +23,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Start server
-    server = dns.server.Server(args.port, args.caching, args.ttl)
+    server = Server(args.port, args.caching, args.ttl)
     
     try:
         server.serve()
@@ -30,3 +32,7 @@ if __name__ == "__main__":
         print("\n[*] - Trying to shut down.")
         server.shutdown()
         time.sleep(1)
+
+
+if __name__ == "__main__":
+    run_server()

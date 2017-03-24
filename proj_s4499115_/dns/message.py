@@ -1,33 +1,43 @@
 #!/usr/bin/env python3
 
-""" DNS messages
+"""DNS messages.
 
 This module contains classes for DNS messages, their header section and
 question fields. See section 4 of RFC 1035 for more info.
 """
 
-import socket
+
 import struct
 
 from dns.classes import Class
-from dns.domainname import Parser, Composer
+from dns.name import Name
 from dns.resource import ResourceRecord
 from dns.rtypes import Type
 
 
-class Message(object):
-    """ DNS message """
+class Message:
+    """DNS message."""
 
-    def __init__(self, header, questions=[], answers=[], authorities=[], additionals=[]):
-        """ Create a new DNS message
-        
+    def __init__(self, header, questions=None, answers=None, authorities=None,
+                 additionals=None):
+        """Create a new DNS message.
+
         Args:
-            header (Header): the header section
-            questions ([Question]): the question section
-            answers ([ResourceRecord]): the answer section
-            authorities ([ResourceRecord]): the authority section
-            additionals ([ResourceRecord]): the additional section
+            header (Header): the header section.
+            questions ([Question]): the question section.
+            answers ([ResourceRecord]): the answer section.
+            authorities ([ResourceRecord]): the authority section.
+            additionals ([ResourceRecord]): the additional section.
         """
+        if questions is None:
+            questions = []
+        if answers is None:
+            answers = []
+        if authorities is None:
+            authorities = []
+        if additionals is None:
+            additionals = []
+
         self.header = header
         self.questions = questions
         self.answers = answers
@@ -36,95 +46,84 @@ class Message(object):
 
     @property
     def resources(self):
-        """ Getter for all resource records """
+        """Getter for all resource records."""
         return self.answers + self.authorities + self.additionals
 
     def to_bytes(self):
-        """ Convert Message to bytes """
-        composer = Composer()
+        """Convert Message to bytes."""
+        compress = {}
 
-        # Add header
         result = self.header.to_bytes()
 
-        # Add questions
         for question in self.questions:
             offset = len(result)
-            result += question.to_bytes(offset, composer)
+            result += question.to_bytes(offset, compress)
 
-        # Add answers
         for answer in self.answers:
             offset = len(result)
-            result += answer.to_bytes(offset, composer)
+            result += answer.to_bytes(offset, compress)
 
-        # Add authorities
         for authority in self.authorities:
             offset = len(result)
-            result += authority.to_bytes(offset, composer)
+            result += authority.to_bytes(offset, compress)
 
-        # Add additionals
         for additional in self.additionals:
             offset = len(result)
-            result += additional.to_bytes(offset, composer)
+            result += additional.to_bytes(offset, compress)
 
         return result
 
     @classmethod
     def from_bytes(cls, packet):
-        """ Create Message from bytes
+        """Create Message from bytes.
 
         Args:
-            packet (bytes): byte representation of the message
+            packet (bytes): byte representation of the message.
         """
-        parser = Parser()
-
-        # Parse header
         header, offset = Header.from_bytes(packet), 12
 
-        # Parse questions
         questions = []
         for _ in range(header.qd_count):
-            question, offset = Question.from_bytes(packet, offset, parser)
+            question, offset = Question.from_bytes(packet, offset)
             questions.append(question)
 
-        # Parse answers
         answers = []
         for _ in range(header.an_count):
-            answer, offset = ResourceRecord.from_bytes(packet, offset, parser)
+            answer, offset = ResourceRecord.from_bytes(packet, offset)
             answers.append(answer)
 
-        # Parse authorities
         authorities = []
         for _ in range(header.ns_count):
-            auth, offset = ResourceRecord.from_bytes(packet, offset, parser)
-            authorities.append(auth)
+            authority, offset = ResourceRecord.from_bytes(packet, offset)
+            authorities.append(authority)
 
-        # Parse additionals
         additionals = []
         for _ in range(header.ar_count):
-            add, offset = ResourceRecord.from_bytes(packet, offset, parser)
-            additionals.append(add)
+            additional, offset = ResourceRecord.from_bytes(packet, offset)
+            additionals.append(additional)
 
         return cls(header, questions, answers, authorities, additionals)
 
 
-class Header(object):
-    """ The header section of a DNS message
-    
+class Header:
+    """The header section of a DNS message
+
     Contains a number of properties which are accessible as normal member
     variables.
 
     See section 4.1.1 of RFC 1035 for their meaning.
     """
-    
+
     def __init__(self, ident, flags, qd_count, an_count, ns_count, ar_count):
         """ Create a new Header object
 
         Args:
-            ident (int): identifier
-            qd_count (int): number of entries in question section
-            an_count (int): number of entries in answer section
-            ns_count (int): number of entries in authority section
-            ar_count (int): number of entries in additional section
+            ident (int): identifier.
+            flags (int): raw flags.
+            qd_count (int): number of entries in question section.
+            an_count (int): number of entries in answer section.
+            ns_count (int): number of entries in authority section.
+            ar_count (int): number of entries in additional section.
         """
         self.ident = ident
         self._flags = flags
@@ -134,37 +133,40 @@ class Header(object):
         self.ar_count = ar_count
 
     def to_bytes(self):
-        """ Convert header to bytes """
-        return struct.pack("!6H", 
-                self.ident,
-                self._flags, 
-                self.qd_count, 
-                self.an_count, 
-                self.ns_count, 
-                self.ar_count)
+        """ Convert header to bytes."""
+        return struct.pack("!6H",
+                           self.ident,
+                           self._flags,
+                           self.qd_count,
+                           self.an_count,
+                           self.ns_count,
+                           self.ar_count)
 
     @classmethod
     def from_bytes(cls, packet):
-        """ Convert Header from bytes """
+        """ Convert Header from bytes."""
         if len(packet) < 12:
-            raise ShortHeader
+            raise ValueError("header is too short")
         return cls(*struct.unpack_from("!6H", packet))
-   
+
     @property
     def flags(self):
+        """Get raw flag values."""
         return self._flags
     @flags.setter
     def flags(self, value):
+        """Set raw flag values."""
         if value >= (1 << 16):
             raise ValueError("value too big for flags")
         self._flags = value
 
-    #Is dit een query? Dan 0. Is dit een response? Dan 1.
     @property
     def qr(self):
-        return self._flags & (1 << 15)
+        """Get QR flag."""
+        return (self._flags >> 15) & 0b1
     @qr.setter
     def qr(self, value):
+        """Set QR flag."""
         if value:
             self._flags |= (1 << 15)
         else:
@@ -172,19 +174,23 @@ class Header(object):
 
     @property
     def opcode(self):
-        return (self._flags & (((1 << 4) - 1) << 11)) >> 11
+        """Get Opcode."""
+        return (self._flags >> 11) & 0b1111
     @opcode.setter
     def opcode(self, value):
+        """Set Opcode."""
         if value > 0b1111:
             raise ValueError("invalid opcode")
-        self._flags &= ~(((1 << 4) - 1) << 11)
+        self._flags &= ~(15 << 11)
         self._flags |= value << 11
 
     @property
     def aa(self):
-        return self._flags & (1 << 10)
+        """Get aa flag."""
+        return (self._flags >> 10) & 0b1
     @aa.setter
     def aa(self, value):
+        """Set aa flag."""
         if value:
             self._flags |= (1 << 10)
         else:
@@ -192,9 +198,11 @@ class Header(object):
 
     @property
     def tc(self):
-        return self._flags & (1 << 9)
+        """Get tc flag."""
+        return (self._flags >> 9) & 0b1
     @tc.setter
     def tc(self, value):
+        """Set tc flag."""
         if value:
             self._flags |= (1 << 9)
         else:
@@ -202,9 +210,11 @@ class Header(object):
 
     @property
     def rd(self):
-        return self._flags & (1 << 8)
+        """Get rd flag."""
+        return (self._flags >> 8) & 0b1
     @rd.setter
     def rd(self, value):
+        """Set rd flag."""
         if value:
             self._flags |= (1 << 8)
         else:
@@ -212,9 +222,11 @@ class Header(object):
 
     @property
     def ra(self):
-        return self._flags & (1 << 7)
+        """Get ra flag."""
+        return (self._flags >> 7) & 0b1
     @ra.setter
     def ra(self, value):
+        """Set ra flag."""
         if value:
             self._flags |= (1 << 7)
         else:
@@ -222,52 +234,51 @@ class Header(object):
 
     @property
     def z(self):
-        return (self._flags & (((1 << 3) - 1) << 4) >> 4)
-    @z.setter
-    def z(self, value):
-        if value:
-            raise ValueError("non-zero zero flag")
+        """Get data in reserved field."""
+        return (self._flags  >> 4) & 0b111
 
     @property
     def rcode(self):
-        return self._flags & ((1 << 4) - 1)
+        """Get RCODE."""
+        return self._flags & 0b1111
     @rcode.setter
     def rcode(self, value):
+        """Set RCODE."""
         if value > 0b1111:
             raise ValueError("invalid return code")
-        self._flags &= ~((1 << 4) - 1)
+        self._flags &= ~0b1111
         self._flags |= value
 
 
-class Question(object):
-    """ An entry in the question section.
+class Question:
+    """An entry in the question section.
 
     See section 4.1.2 of RFC 1035 for more info.
     """
 
     def __init__(self, qname, qtype, qclass):
-        """ Create a new entry in the question section 
-        
+        """Create a new entry in the question section.
+
         Args:
-            qname (str): QNAME
-            qtype (Type): QTYPE
-            qclass (Class): QCLASS
+            qname (str): the QNAME.
+            qtype (Type): the QTYPE.
+            qclass (Class): the QCLASS.
         """
         self.qname = qname
         self.qtype = qtype
         self.qclass = qclass
 
-    def to_bytes(self, offset, composer):
-        """ Convert Question to bytes """
-        bqname = composer.to_bytes(offset, [self.qname])
+    def to_bytes(self, offset, compress):
+        """Convert Question to bytes."""
+        bqname = Name(self.qname).to_bytes(offset, compress)
         bqtype = struct.pack("!H", self.qtype)
         bqclass = struct.pack("!H", self.qclass)
         return bqname + bqtype + bqclass
 
     @classmethod
-    def from_bytes(cls, packet, offset, parser):
-        """ Convert Question from bytes """
-        qnames, offset = parser.from_bytes(packet, offset, 1)
-        qname = qnames[0]
-        qtype, qclass = struct.unpack_from("!2H", packet, offset)
+    def from_bytes(cls, packet, offset):
+        """Convert Question from bytes."""
+        qname, offset = Name.from_bytes(packet, offset)
+        qtype = Type(struct.unpack_from("!H", packet, offset)[0])
+        qclass = Class(struct.unpack_from("!H", packet, offset + 2)[0])
         return cls(qname, qtype, qclass), offset + 4

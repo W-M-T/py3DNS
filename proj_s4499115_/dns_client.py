@@ -5,13 +5,17 @@
 A simple example of a client using the DNS resolver.
 """
 
-import dns.resolver
+from argparse import ArgumentParser
+
+from dns.resolver import Resolver
 
 if __name__ == "__main__":
     # Parse arguments
-    import argparse
-    parser = argparse.ArgumentParser(description="DNS Client")
+    
+    parser = ArgumentParser(description="DNS Client")
     parser.add_argument("hostname", help="hostname to resolve", nargs='?', type=str, default="www.nu.nl")
+    parser.add_argument("--timeout", metavar="time", type=int, default=5,
+            help="resolver timeout")
     parser.add_argument("-c", "--caching", action="store_true",
             help="Enable caching")
     parser.add_argument("-t", "--ttl", metavar="time", type=int, default=0, 
@@ -19,10 +23,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Resolve hostname
-    resolver = dns.resolver.Resolver(args.caching, args.ttl)
-    hostname, aliases, addresses = resolver.gethostbyname(args.hostname)
+    resolver = Resolver(args.timeout, args.caching, args.ttl)
+    hostname, aliaslist, ipaddrlist = resolver.gethostbyname(args.hostname)
     
     # Print output
     print(hostname)
-    print(aliases)
-    print(addresses)
+    print(aliaslist)
+    print(ipaddrlist)
