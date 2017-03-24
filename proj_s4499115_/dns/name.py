@@ -21,6 +21,7 @@ class Name:
         elif isinstance(hostname, list):
             self.labels = hostname
         else:
+            print(type(hostname))
             raise TypeError
 
     def __eq__(self, other):
