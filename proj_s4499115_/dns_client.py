@@ -22,7 +22,7 @@ if __name__ == "__main__":
             help="TTL value of cached entries")
     args = parser.parse_args()
     
-    # Resolve hostname]
+    # Resolve hostname
     resolver = Resolver(args.timeout, args.caching, args.ttl)
     hostname, aliaslist, ipaddrlist = resolver.gethostbyname(args.hostname)
     
