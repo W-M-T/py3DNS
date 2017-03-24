@@ -1,2 +1,0 @@
-in de cache rdata
-want ResourceRecord heeft geen .data meer

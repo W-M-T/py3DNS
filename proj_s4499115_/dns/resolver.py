@@ -111,17 +111,22 @@ class Resolver(object):
         ipaddrlist = []
 
         #Check if the hostname is valid
+        #Do stuff with last dot
+        if hostname[-1] == '.':
+            hostname = hostname[0:-1]
         valid = self.is_valid_hostname(hostname)
         if not valid:
+            print("Invalid hostname!")
             return hostname, [], []
-
+        hostname = hostname + '.'
+        
         #Check if the information is in the cache
         if self.caching:   		
             for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
-                aliaslist.append(alias.rdata.data)
+                aliaslist.append(str(alias.rdata.cname))
             
             for address in self.cache.lookup(hostname, Type.A, Class.IN):
-                ipaddrlist.append(address.rdata.data)
+                ipaddrlist.append(str(rdata.address))
 
             if ipaddrlist:
                 #print("We found an address in the cache!")
@@ -137,43 +142,48 @@ class Resolver(object):
 
             #Build the query to send to that server
             identifier = randint(0, 65535)
-            
-            question = Question(hostname, Type.A, Class.IN)
+
+            #Make a question for every alias
+            questions = [Question(hostname, Type.A, Class.IN)]
+            for alias in aliaslist:
+                question = Question(alias, Type.A, Class.IN)
+                questions.append(question)
+                
             header = Header(identifier, 0, 1, 0, 0, 0)
             header.qr = 0
             header.opcode = 0
             header.rd = 0
-            query = Message(header, [question])
+            query = Message(header, questions)
 
             print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
             if response == None:#We didn't get a response for this server, so check the next one
-                #print("Server at " + hint + " did not respond.")
+                print("Server at " + hint + " did not respond.")
                 continue
-
+            
             #Analyze the response
             for answer in response.answers + response.additionals:#First get the aliases
-                #print("Answer analyzing: " + str(answer.rdata.data))
                 if answer.type_ == Type.CNAME and str(answer.rdata.cname) not in aliaslist:
                     aliaslist.append(str(answer.rdata.cname))
 
             for answer in response.answers:#Then try to get an address
-                if answer.type_ == Type.A and (answer.name == hostname or answer.name in aliaslist):  
-                    ipaddrlist.append(str(answer.rdata.adress))
+                if answer.type_ == Type.A and (str(answer.name) == hostname or str(answer.name) in aliaslist):
+                    ipaddrlist.append(str(answer.rdata.address))
                 
             if ipaddrlist != []:
-                #print("We found an address using the recursive search!")
+                print("We found an address using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
                 for nameserver in response.authorities:
                     if nameserver.type_ == Type.NS:
-                        print(nameserver.to_dict())
+                        #print(nameserver.to_dict())
                         if self.caching:
                             self.cache.add_record(nameserver)
                         hints = [str(nameserver.rdata.nsdname)] + hints
+                        #Maybe check if it has already been in hints once?
 
-        #print("Recursive search for " + hostname + " was a total failure")
+        print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []
