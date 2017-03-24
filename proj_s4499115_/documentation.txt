@@ -1,15 +1,25 @@
-pyDNS: a simple DNS server and resolver
-By: Tim van Dijk S4477073 & Ward Theunisse S4499115
+py3DNS: A simple DNS server and resolver based on Python 3.6
+By: Ward Theunisse, s4499115 & Luuk van Blitterswijk, s4359283
+Version: 1
+
+IMPORTANT NOTICE:
+
+This assignment is based on last years assignment. The code based has been reused and adjusted to work with the new
+framework and to comply with the current assignment's requirements. This has been communicated with Paul Fiterau Brostean
+and permission for this has been granted on 24 March 2017.
+
 
 INTRODUCTION:
 
-pyDNS is a simple DNS server and resolver written in Python 2.7 for Linux operating systems.
-It is built on top of a provided framework. This framework was written in Python 2.7,
-therefore we chose to continue writing code in Python 2.7. Some tests are
-provided in dns_tests.py.
+Py3DNS is a simple DNS server and resolver written in Python 3.6 of Unix-based operating systems
+It is the product for the first project of the course Networks and Distributed Systems of Radboud University's
+Computer Science programme, which supplied us the framework to built this application on.
+This version currently supports the following functionalities: Non-caching DNS resolving by use of dns_client.py and testing this by
+running dns_tests.py.
+Currently not supported but partly implemented: DNS-resolving with caching; DNS-server; Tests related to the cache.
 
 
-RUNNING AND OPTIONS:
+COMMANDS AND OPTIONS
 
 The server and tests can be run from command line with several optional parameters.
 
