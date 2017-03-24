@@ -54,7 +54,7 @@ class Message:
         compress = {}
 
         result = self.header.to_bytes()
-
+        
         for question in self.questions:
             offset = len(result)
             result += question.to_bytes(offset, compress)
@@ -70,7 +70,7 @@ class Message:
         for additional in self.additionals:
             offset = len(result)
             result += additional.to_bytes(offset, compress)
-
+            
         return result
 
     @classmethod
@@ -270,7 +270,7 @@ class Question:
 
     def to_bytes(self, offset, compress):
         """Convert Question to bytes."""
-        bqname = Name(self.qname).to_bytes(offset, compress)
+        bqname = (Name(self.qname)).to_bytes(offset, compress)
         bqtype = struct.pack("!H", self.qtype)
         bqclass = struct.pack("!H", self.qclass)
         return bqname + bqtype + bqclass

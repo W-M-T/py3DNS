@@ -4,7 +4,7 @@ import dns.zone
 import dns.consts as Consts
 from dns.classes import Class
 from dns.rtypes import Type
-import dns.resource
+from dns.resource import RecordData, ResourceRecord
 
 """ Zones of domain name space 
 
@@ -98,7 +98,6 @@ class Zone(object):
         content = re.compile(r'\(.*?\)', re.DOTALL)\
             .sub(lambda x: x.group().replace('\n', ''), content) #Remove newlines between ()
         content = re.sub(re.compile("\t+") , " ", content) #Remove tabs between words
-        print(content)
         default_ttl = None
         origin = None
 
@@ -111,7 +110,6 @@ class Zone(object):
                 origin = line[7:].strip()
             elif "SOA" not in line:
                 parts = line.split(' ')
-                print(parts)
                 rr_name = parts[0]
                 
                 rr_ttl = self.time_to_seconds(parts[1])
@@ -121,6 +119,5 @@ class Zone(object):
 
                 rr_class = Class[parts[1+offset]]
                 rr_type = parts[2+offset]
-                print(rr_type)
-                rr_data = dns.resource.RecordData.create(Type[rr_type], parts[3+offset].rstrip('.'))
-                self.add_node(rr_name, dns.resource.ResourceRecord(rr_name, Type[rr_type], rr_class, rr_ttl, rr_data))
+                rr_data = RecordData.create(Type[rr_type], parts[3+offset].rstrip('.'))
+                self.add_node(rr_name, ResourceRecord(rr_name, Type[rr_type], rr_class, rr_ttl, rr_data))

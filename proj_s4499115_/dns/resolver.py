@@ -145,6 +145,7 @@ class Resolver(object):
             header.rd = 0
             query = Message(header, [question])
 
+            print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
@@ -155,12 +156,12 @@ class Resolver(object):
             #Analyze the response
             for answer in response.answers + response.additionals:#First get the aliases
                 #print("Answer analyzing: " + str(answer.rdata.data))
-                if answer.type_ == Type.CNAME and answer.rdata.data not in aliases:
-                    aliaslist.append(answer.rdata.data)
+                if answer.type_ == Type.CNAME and str(answer.rdata.cname) not in aliaslist:
+                    aliaslist.append(str(answer.rdata.cname))
 
             for answer in response.answers:#Then try to get an address
                 if answer.type_ == Type.A and (answer.name == hostname or answer.name in aliaslist):  
-                    ipaddrlist.append(answer.rdata.data)
+                    ipaddrlist.append(str(answer.rdata.adress))
                 
             if ipaddrlist != []:
                 #print("We found an address using the recursive search!")
@@ -169,10 +170,10 @@ class Resolver(object):
             else:
                 for nameserver in response.authorities:
                     if nameserver.type_ == Type.NS:
-                        #print(nameserver.rdata.data)
+                        print(nameserver.to_dict())
                         if self.caching:
                             self.cache.add_record(nameserver)
-                        hints = [nameserver.rdata.data] + hints
+                        hints = [str(nameserver.rdata.nsdname)] + hints
 
         #print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []
