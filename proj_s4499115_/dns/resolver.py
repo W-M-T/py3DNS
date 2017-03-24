@@ -79,6 +79,7 @@ class Resolver(object):
             data = sock.recv(1024)
             response = Message.from_bytes(data)
             if response.header.ident != query.header.ident:
+                sock.close()
                 return None
             
             if self.caching:
@@ -90,7 +91,8 @@ class Resolver(object):
                     
         except socket.timeout:
             pass
-        
+
+        sock.close()
         return response
 
 
@@ -125,8 +127,8 @@ class Resolver(object):
             for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
                 aliaslist.append(str(alias.rdata.cname))
             
-            for address in self.cache.lookup(hostname, Type.A, Class.IN):
-                ipaddrlist.append(str(rdata.address))
+            for addr in self.cache.lookup(hostname, Type.A, Class.IN):
+                ipaddrlist.append(str(addr.rdata.address))
 
             if ipaddrlist:
                 #print("We found an address in the cache!")
@@ -155,12 +157,12 @@ class Resolver(object):
             header.rd = 0
             query = Message(header, questions)
 
-            print("Asking the server "+ hint)
+            #print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
             if response == None:#We didn't get a response for this server, so check the next one
-                print("Server at " + hint + " did not respond.")
+                #print("Server at " + hint + " did not respond.")
                 continue
             
             #Analyze the response
@@ -173,7 +175,7 @@ class Resolver(object):
                     ipaddrlist.append(str(answer.rdata.address))
                 
             if ipaddrlist != []:
-                print("We found an address using the recursive search!")
+                #print("We found an address using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -185,5 +187,5 @@ class Resolver(object):
                         hints = [str(nameserver.rdata.nsdname)] + hints
                         #Maybe check if it has already been in hints once?
 
-        print("Recursive search for " + hostname + " was a total failure")
+        #print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []

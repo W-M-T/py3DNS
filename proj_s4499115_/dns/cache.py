@@ -58,10 +58,9 @@ class RecordCache(object):
 
         if (int(time.time()) - self.lastCleanup >= 3600): #Cache al een uur lang niet gecleaned
             self.cleanup()
-
         foundrecords = [record for record in self.records \
                 if record.name == dname and record.type_ == type_ and record.class_ == class_ \
-                and record.ttl > time.time()]
+                and record.ttl + record.timestamp > time.time()]#maybe change how timestamps work here
         
         #Verschuif de ttl en timestamp naar nu
         curTime = int(time.time())
