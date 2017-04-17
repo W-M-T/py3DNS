@@ -108,7 +108,7 @@ class Resolver(object):
             ipaddrlist ([str]): list of IP addresses of the hostname 
 
         """
-        #print("==GETHOSTNAME START=================")
+        print("==GETHOSTNAME START================= (",hostname,")")
         aliaslist = []
         ipaddrlist = []
 
@@ -136,55 +136,84 @@ class Resolver(object):
 
         #Do the recursive algorithm
         hints = self.nameservers
+        usedhints = []#List of addresses
+        usednameservers = []#List of names of nameservers that have been seen
         
         while hints:
             #Get the server to ask
             hint = hints[0]
+            usedhints.append(hint)
             hints = hints[1:]
+            #print("Hints: ",hints)
 
             #Build the query to send to that server
             identifier = randint(0, 65535)
 
-            #Make a question for every alias
+            #Make question
             questions = [Question(hostname, Type.A, Class.IN)]
-            for alias in aliaslist:
-                question = Question(alias, Type.A, Class.IN)
-                questions.append(question)
-                
+            
+            #Make header
             header = Header(identifier, 0, 1, 0, 0, 0)
             header.qr = 0
             header.opcode = 0
             header.rd = 0
             query = Message(header, questions)
 
-            #print("Asking the server "+ hint)
+            print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
             if response == None:#We didn't get a response for this server, so check the next one
-                #print("Server at " + hint + " did not respond.")
+                print("Server at " + hint + " did not respond.")
                 continue
-            
-            #Analyze the response
-            for answer in response.answers + response.additionals:#First get the aliases
-                if answer.type_ == Type.CNAME and str(answer.rdata.cname) not in aliaslist:
-                    aliaslist.append(str(answer.rdata.cname))
 
-            for answer in response.answers:#Then try to get an address
+            print(response)
+
+            #Cache the response A and CNAME records
+            if self.caching:
+                for answer in response.answers:
+                    if answer.type_ == Type.A or answer.type_ == Type.CNAME:
+                        self.cache.add_record(answer)
+
+
+
+            #Analyze the response
+            for answer in response.answers:#First try to get an address
                 if answer.type_ == Type.A and (str(answer.name) == hostname or str(answer.name) in aliaslist):
                     ipaddrlist.append(str(answer.rdata.address))
+
+            for answer in response.answers:#Then get the aliases
+                if answer.type_ == Type.CNAME and str(answer.rdata.cname) not in aliaslist:
+                    #We found an alias, so restart the request using it
+                    aliaslist.append(str(answer.rdata.cname))
+                    _, recaliaslist, recipaddrlist = self.gethostbyname(str(answer.rdata.cname))
+
+                    aliaslist += recaliaslist
+                    ipaddrlist += recipaddrlist
+
                 
             if ipaddrlist != []:
-                #print("We found an address using the recursive search!")
+                print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
                 for nameserver in response.authorities:
                     if nameserver.type_ == Type.NS:
-                        if self.caching:
-                            self.cache.add_record(nameserver)
-                        hints = [str(nameserver.rdata.nsdname)] + hints
-                        #Maybe check if it has already been in hints once?
+                        #Check if we got the ip of this nameserver in the additional section
+                        for additional in response.additionals:
+                            if nameserver.rdata.nsdname == additional.name:
+                                if str(additional.rdata.address) not in usedhints:#Prevent recycling of old hints
+                                    hints = [str(additional.rdata.address)] + hints
+                                    usednameservers.append(str(additional.name))
+                                break
+                        else:#This nameserver wasn't in the additional section
+                        #TODO This stuff doesn't work yet
+                            if str(nameserver.rdata.nsdname) not in usednameservers and str(nameserver.rdata.nsdname) != hostname:#It is an unseen nameserver
+                                _, _, nsipaddrlist = self.gethostbyname(str(nameserver.rdata.nsdname))
+                                hints = nsipaddrlist + hints
+                                usednameservers.append(str(nameserver.rdata.nsdname))
+                                
 
-        #print("Recursive search for " + hostname + " was a total failure")
+        print("Recursive search for " + hostname + " was a total failure")
+        print("We still had the following unresolved hints:",unresolvedhints)
         return hostname, [], []

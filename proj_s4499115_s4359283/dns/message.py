@@ -44,6 +44,17 @@ class Message:
         self.authorities = authorities
         self.additionals = additionals
 
+    def __str__(self):
+        string = "========MSG========"
+        string += "\nAnswers:\n"
+        string += "\n".join([str(q.to_dict()) for q in self.answers])
+        string += "\nAuthorities:\n"
+        string += "\n".join([str(q.to_dict()) for q in self.authorities if q.type_ != Type.SOA])
+        string += "\nAdditionals:\n"
+        string += "\n".join([str(q.to_dict()) for q in self.additionals])
+        string += "\n=====ENDMSG======="
+        return string
+
     @property
     def resources(self):
         """Getter for all resource records."""
