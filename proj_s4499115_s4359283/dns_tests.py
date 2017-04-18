@@ -36,18 +36,18 @@ class TestResolver(TestCase):
         self.assertEqual(["128.119.245.12"], ad)
 
     def testNoCacheResolveNotExistingFQDN(self):
-        h, al, ad = self.resolver.gethostbyname("s.h.u.c.k.l.e")
-        self.assertEqual("s.h.u.c.k.l.e.", h)
+        h, al, ad = self.resolver.gethostbyname("l.a.r.v.i.t.a.r")
+        self.assertEqual("l.a.r.v.i.t.a.r.", h)
         self.assertEqual([], al)
         self.assertEqual([], ad)
 
-'''
+
 class TestResolverCache(TestCase):
     def setUp(self):
-        self.resolver = Resolver(Consts.DEFAULT_TIMEOUT, True, Consts.DEFAULT_TTL)
+        self.resolver = Resolver(Consts.DEFAULT_TIMEOUT, True, 0)
 
     def testResolveInvalidCachedFQDN(self):#Invalid in the sense that it isn't an existing fqdn
-        shuckleRecord = ResourceRecord("s.h.u.c.k.l.e",\
+        shuckleRecord = ResourceRecord("c.y.n.d.a.q.u.i.l.",\
                 Type.A, Class.IN,\
                 5, RecordData.create(Type.A, "42.42.42.42"))
         self.resolver.cache.add_record(shuckleRecord)
@@ -55,8 +55,8 @@ class TestResolverCache(TestCase):
         #Server checks if FQDN is valid before processing, therefore
         #we use a FQDN that could be valid, but is not.
 
-        h, al, ad = self.resolver.gethostbyname("s.h.u.c.k.l.e")
-        self.assertEqual("s.h.u.c.k.l.e.", h)
+        h, al, ad = self.resolver.gethostbyname("c.y.n.d.a.q.u.i.l")
+        self.assertEqual("c.y.n.d.a.q.u.i.l.", h)
         self.assertEqual([], al)
         self.assertEqual(["42.42.42.42"], ad)
 
@@ -72,7 +72,6 @@ class TestResolverCache(TestCase):
         self.assertEqual("s.h.u.c.k.l.e.", h)
         self.assertEqual([], al)
         self.assertEqual([], ad)
-'''
 
 '''
 class TestServer(TestCase):

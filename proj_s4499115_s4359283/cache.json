@@ -1,407 +1,407 @@
 [
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.5.6.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "a.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.33.14.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "b.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.26.92.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "c.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.31.80.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "d.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.12.94.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "e.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.35.51.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "f.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.42.93.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.54.112.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "h.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.43.172.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "i.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.48.79.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "j.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.52.178.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "k.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.41.162.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "l.gtld-servers.net."
   },
   {
-    "ttl": 172433,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172106,
     "rdata": {
       "address": "192.55.83.30"
     },
-    "class": "IN",
-    "type": "A",
     "name": "m.gtld-servers.net."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.194.45"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns-557.awsdns-05.net."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.193.122"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns-378.awsdns-47.com."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.19.56.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "a0.org.afilias-nst.info."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.249.112.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "a2.org.afilias-nst.info."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.19.54.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "b0.org.afilias-nst.org."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.249.120.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "b2.org.afilias-nst.org."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.19.53.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "c0.org.afilias-nst.info."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "199.19.57.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "d0.org.afilias-nst.org."
   },
   {
-    "ttl": 86046,
+    "type": "A",
+    "class": "IN",
+    "ttl": 85719,
     "rdata": {
       "address": "205.251.192.128"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-128.awsdns-00.org."
   },
   {
-    "ttl": 86046,
+    "type": "A",
+    "class": "IN",
+    "ttl": 85719,
     "rdata": {
       "address": "205.251.194.194"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-706.awsdns-00.org."
   },
   {
-    "ttl": 86046,
+    "type": "A",
+    "class": "IN",
+    "ttl": 85719,
     "rdata": {
       "address": "205.251.196.3"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-1027.awsdns-00.org."
   },
   {
-    "ttl": 86046,
+    "type": "A",
+    "class": "IN",
+    "ttl": 85719,
     "rdata": {
       "address": "205.251.198.64"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-1600.awsdns-00.org."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.196.5"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns-1029.awsdns-00.org."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "156.154.100.3"
     },
-    "class": "IN",
-    "type": "A",
     "name": "nsa.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "156.154.101.3"
     },
-    "class": "IN",
-    "type": "A",
     "name": "nsb.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "156.154.102.3"
     },
-    "class": "IN",
-    "type": "A",
     "name": "nsc.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "156.154.103.3"
     },
-    "class": "IN",
-    "type": "A",
     "name": "nsd.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "213.248.216.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "dns1.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "103.49.80.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "dns2.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "213.248.220.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "dns3.nic.uk."
   },
   {
-    "ttl": 172447,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172120,
     "rdata": {
       "address": "43.230.48.1"
     },
-    "class": "IN",
-    "type": "A",
     "name": "dns4.nic.uk."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.193.107"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-363.awsdns-43.co.uk."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.195.171"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-939.awsdns-43.co.uk."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.197.238"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-1518.awsdns-43.co.uk."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.199.47"
     },
-    "class": "IN",
-    "type": "A",
     "name": "g-ns-1839.awsdns-43.co.uk."
   },
   {
-    "ttl": 172446,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172119,
     "rdata": {
       "address": "205.251.199.95"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns-1887.awsdns-43.co.uk."
   },
   {
-    "ttl": 172442,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172114,
     "rdata": {
       "address": "23.235.32.32"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns1.fastly.net."
   },
   {
-    "ttl": 172442,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172114,
     "rdata": {
       "address": "104.156.80.32"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns2.fastly.net."
   },
   {
-    "ttl": 172442,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172114,
     "rdata": {
       "address": "23.235.36.32"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns3.fastly.net."
   },
   {
-    "ttl": 172442,
+    "type": "A",
+    "class": "IN",
+    "ttl": 172114,
     "rdata": {
       "address": "104.156.84.32"
     },
-    "class": "IN",
-    "type": "A",
     "name": "ns4.fastly.net."
   },
   {
-    "ttl": 266,
+    "type": "CNAME",
+    "class": "IN",
+    "ttl": 299,
     "rdata": {
       "cname": "reddit.map.fastly.net."
     },
-    "class": "IN",
-    "type": "CNAME",
     "name": "www.reddit.com."
   },
   {
+    "type": "A",
+    "class": "IN",
     "ttl": 30,
     "rdata": {
       "address": "151.101.37.140"
     },
-    "class": "IN",
-    "type": "A",
     "name": "reddit.map.fastly.net."
   }
 ]

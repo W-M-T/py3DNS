@@ -75,7 +75,7 @@ class RecordCache(object):
 
         foundrecords = [record for record in self.records \
                 if str(record.name) == dname and record.type_ == type_ and record.class_ == class_ \
-                and True]
+                and elapsed <= record.ttl]
         
         #Verschuif de ttl en timestamp naar nu
         for record in foundrecords:
