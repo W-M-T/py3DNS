@@ -13,10 +13,12 @@ import dns.message
 import dns.resolver
 import dns.zone
 
-from dns.resource import ResourceRecord, ARecordData, CNAMERecordData
+from dns.resource import ResourceRecord, RecordData
 from dns.classes import Class
 from dns.rtypes import Type
 import dns.consts as Consts
+from dns.name import Name
+from dns.message import Message
 
 
 lock = Lock()
@@ -43,12 +45,12 @@ class RequestHandler(Thread):
             hname (str): the FQDN of the host we want to look up
 
         Returns:
-            hname (str): the FQDN of the host we want to look up,
             answer ([ResourceRecord]): the records that directly give an IP address,
             authority ([ResourceRecord]): the records that tell about the nameservers that "know more",
             A boolean that tells if we found something
         """
         #print("Checking zone for \"" + hname + "\"")
+        return [], [], False
         
         h_parts = hname.rstrip('.').split('.')
 
@@ -105,26 +107,24 @@ class RequestHandler(Thread):
 
     def handle_request(self):
         """ Attempts to answer the received query """
+        self.sendResponse(self.message)
+        return#TODO this is temp used it to debug the to/frombytes methods
 
+        
         print("[*] - Handling request.")
         if len(self.message.questions) != 1:
             print("[-] - Invalid request.")#Hier bestaat een statuscode voor toch?
             return
-        hname = self.message.questions[0].qname
-        #print("Solving " + str(hname))
+        print("MSG:",self.message)
+        print("RECEIVED QUESTION",self.message.questions[0])
+        hname = str(self.message.questions[0].qname)
+        print("Solving",hname)
         ident = self.message.header.ident
-        #print("Checking zone")
-        answer, authority, found = self.check_zone(hname)
+        print("Checking zone")
+        #answer, authority, found = self.check_zone(hname)
         #print("Wat we in de zone hebben gevonden")
-        #print("ans auth found")
-        #print(answer)
-        #for ans in answer:
-        #    print(ans.rdata.data)
-        #print(authority)
-        #for aut in authority:
-        #    print(aut.rdata.data)
-        #print(found)
-        
+        #print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
+        found = False
         if found:
             header = dns.message.Header(ident, 0, 1, len(answer), len(authority), 0)
             header.rd = 1 if self.message.header.rd == 256 else 0
@@ -136,23 +136,30 @@ class RequestHandler(Thread):
             self.sendResponse(dns.message.Message(header, self.message.questions, answer, authority))
 
         else:
-            #print("In de server waar we het niet in de zone hebben")
+            print("Niet in zone, zoek online...")
             h, al, ad = self.resolver.gethostbyname(hname)
-            #print("Server gebruikte online resolver en vond dit")
-            #print(h)
-            #print(al)
-            #print(ad)
-            if ad:
+            print("Server gebruikte online resolver en vond dit")
+            print("HOSTNAME",h,type(h))
+            print("ALIASES",al,type(al))
+            for k in al:
+                print(k,type(k))
+            print("ADDITIONAL",ad,type(ad))
+            for k in ad:
+                print(k,type(k))
+            al = []
+            ad = []
+            if True:#if ad
                 header = dns.message.Header(ident, 0, 1, len(al) + len(ad), 0, 0)
-                header.rd = 1 if self.message.header.rd == 256 else 0
-                header.ra = 1
-                header.opcode = 0
-                header.qr = 1
+                #header.rd = 1 if self.message.header.rd == 256 else 0
+                #header.ra = 1
+                #header.opcode = 0
+                #header.qr = 1
 
-                aliases = [ResourceRecord(h, Type.CNAME, Class.IN, self.ttl, CNAMERecordData(alias)) for alias in al]
-                addresses = [ResourceRecord(h, Type.A, Class.IN, self.ttl, ARecordData(address)) for address in ad]
+                aliases = []#[ResourceRecord(Name(h), Type.CNAME, Class.IN, self.ttl, RecordData.create(Type.CNAME, Name(alias))) for alias in al]
+                addresses = []#[ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
 
-                self.sendResponse(dns.message.Message(header, self.message.questions, aliases + addresses))
+                #self.sendResponse(dns.message.Message(header, self.message.questions, aliases + addresses))
+                self.sendResponse(self.message)
 
         #Nog een error response sturen anders?
         
@@ -162,6 +169,7 @@ class RequestHandler(Thread):
         with lock:
             print("[+] - Sending response.")
             self.socket.sendto(response.to_bytes(), self.clientIP)
+            print("[+] - Done sending.")
 
     def run(self):
         """ Run the handler thread """
@@ -183,7 +191,7 @@ class Server(object):
             ttl (int): ttl for records (if > 0) of cache
         """
         self.caching = caching
-        self.ttl = ttl if ttl > 0 else 0
+        self.ttl = ttl
         self.port = port
         self.done = False
         self.resolver = dns.resolver.Resolver(Consts.DEFAULT_TIMEOUT, self.caching, self.ttl)
@@ -193,10 +201,13 @@ class Server(object):
 
         self.catalog = dns.zone.Catalog()
         self.catalog.add_zone("ru.nl", self.zone)
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('', self.port))
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.bind(('', self.port))
+        except PermissionError:
+            print("Run as root")
+            exit()
 
     def serve(self):
         """ Start serving request """
@@ -207,7 +218,7 @@ class Server(object):
             data, addr = self.socket.recvfrom(1024)
 
             try:
-                message = dns.message.Message.from_bytes(data)
+                message = Message.from_bytes(data)
             except:
                 print("[-] - Received invalid data.")
                 continue

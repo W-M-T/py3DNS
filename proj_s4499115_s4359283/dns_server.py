@@ -18,7 +18,7 @@ def run_server():
             help="Enable caching")
     parser.add_argument("-t", "--ttl", metavar="time", type=int, default=0, 
             help="TTL value of cached entries (if > 0)")
-    parser.add_argument("-p", "--port", type=int, default=5353,
+    parser.add_argument("-p", "--port", type=int, default=53,
             help="Port which server listens on")
     args = parser.parse_args()
 

@@ -279,9 +279,20 @@ class Question:
         self.qtype = qtype
         self.qclass = qclass
 
+    def __str__(self):
+        string = "========QUESTION========\n"
+        string += "\Qname:\n"
+        string += str(self.qname) + " " + str(type(self.qname)) + "\n"
+        string += "Qtype:\n"
+        string += str(self.qtype) + " " + str(type(self.qtype)) + "\n"
+        string += "Qclass:\n"
+        string += str(self.qclass) + " " + str(type(self.qclass)) + "\n"
+        string += "\n=====QUESTION======="
+
+        return string
     def to_bytes(self, offset, compress):
         """Convert Question to bytes."""
-        bqname = (Name(self.qname)).to_bytes(offset, compress)
+        bqname = self.qname.to_bytes(offset, compress)
         bqtype = struct.pack("!H", self.qtype)
         bqclass = struct.pack("!H", self.qclass)
         return bqname + bqtype + bqclass

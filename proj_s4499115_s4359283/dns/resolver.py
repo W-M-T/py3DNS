@@ -19,6 +19,7 @@ import dns.cache
 from dns.message import Message, Question, Header
 import dns.rcodes
 import dns.consts
+from dns.name import Name
 
 class Resolver(object):
     """ DNS resolver """
@@ -155,7 +156,7 @@ class Resolver(object):
             identifier = randint(0, 65535)
 
             #Make question
-            questions = [Question(hostname, Type.A, Class.IN)]
+            questions = [Question(Name(hostname), Type.A, Class.IN)]
             
             #Make header
             header = Header(identifier, 0, 1, 0, 0, 0)

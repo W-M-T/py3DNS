@@ -22,6 +22,7 @@ class Name:
             self.labels = hostname
         else:
             print(type(hostname))
+            print("It went wrong with this hostname",hostname)
             raise TypeError
 
     def __eq__(self, other):
