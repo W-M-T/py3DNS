@@ -32,9 +32,8 @@ class Resolver(object):
         """
         self.timeout = timeout
         self.caching = caching
-        self.ttl = ttl if ttl > 0 else 0 #Deze check is niet nodig voor de resolver gemaakt via de server, maar wel voor de resolver gemaakt door de client
         if caching:
-            self.cache = RecordCache()
+            self.cache = RecordCache(ttl)
         self.nameservers = nameservers
         if use_rs:
             self.nameservers += dns.consts.ROOT_SERVERS
@@ -81,13 +80,6 @@ class Resolver(object):
             if response.header.ident != query.header.ident:
                 sock.close()
                 return None
-            
-            if self.caching:
-                for record in response.additionals + response.answers + response.authorities:
-                    if record.type_ == Type.A or record.type_ == Type.CNAME:
-                        record.ttl = self.ttl
-                        record.timestamp = int(time.time())
-                        self.cache.add_record(record)
                     
         except socket.timeout:
             pass
@@ -124,7 +116,7 @@ class Resolver(object):
         
         #Check if the information is in the cache
         if self.caching:
-            print("Checking cache..")
+            #print("Checking cache..")
             for addr in self.cache.lookup(hostname, Type.A, Class.IN):
                 print("Found A in cache: ", addr.to_dict())
                 ipaddrlist.append(str(addr.rdata.address))
@@ -184,7 +176,7 @@ class Resolver(object):
 
             #Cache the response A and CNAME records
             if self.caching:
-                print(response)
+                #print(response)
                 for answer in response.answers + response.additionals:
                     if answer.type_ == Type.A or answer.type_ == Type.CNAME:
                         self.cache.add_record(answer)

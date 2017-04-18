@@ -19,7 +19,7 @@ from dns.rtypes import Type
 
 class ResourceRecord(object):
     """DNS resource record."""
-    def __init__(self, name, type_, class_, ttl, rdata, timestamp=None):
+    def __init__(self, name, type_, class_, ttl, rdata):
         """Create a new resource record.
 
         Args:
@@ -33,7 +33,6 @@ class ResourceRecord(object):
         self.class_ = class_
         self.ttl = ttl
         self.rdata = rdata
-        self.timestamp = timestamp if timestamp != None else (int)(time.time())
 
     def to_bytes(self, offset, compress):
         """Convert ResourceRecord to bytes."""
