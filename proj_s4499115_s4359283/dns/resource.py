@@ -214,7 +214,7 @@ class CNAMERecordData(RecordData):
     @classmethod
     def from_dict(cls, dct):
         """Create a RecordData object from dict."""
-        print(dct)
+
         return cls(Name(dct["cname"]))
 
 

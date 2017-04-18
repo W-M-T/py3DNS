@@ -108,7 +108,7 @@ class Resolver(object):
             ipaddrlist ([str]): list of IP addresses of the hostname 
 
         """
-        #print("==GETHOSTNAME START================= (",hostname,")")
+        print("==GETHOSTNAME START================= (",hostname,")")
         aliaslist = []
         ipaddrlist = []
 
@@ -123,16 +123,29 @@ class Resolver(object):
         hostname = hostname + '.'
         
         #Check if the information is in the cache
-        if self.caching:   		
-            for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
-                aliaslist.append(str(alias.rdata.cname))
-            
+        if self.caching:
+            print("Checking cache..")
             for addr in self.cache.lookup(hostname, Type.A, Class.IN):
+                print("Found A in cache: ", addr.to_dict())
                 ipaddrlist.append(str(addr.rdata.address))
 
-            if ipaddrlist:
-                #print("We found an address in the cache!")
+            if ipaddrlist:#If we already found the ip here, don't go after possible cname stuff
+                print("We found an address in the cache!")
                 return hostname, aliaslist, ipaddrlist
+
+            for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
+                print("Found CNAME in cache: ", alias.to_dict())
+                aliaslist.append(str(alias.rdata.cname))
+                _, recaliaslist, recipaddrlist = self.gethostbyname(str(alias.rdata.cname))
+
+                aliaslist += recaliaslist
+                ipaddrlist += recipaddrlist
+            
+            if ipaddrlist:
+                print("We found an address in the cache!")
+                return hostname, aliaslist, ipaddrlist
+
+
 
         #Do the recursive algorithm
         hints = self.nameservers
@@ -171,7 +184,8 @@ class Resolver(object):
 
             #Cache the response A and CNAME records
             if self.caching:
-                for answer in response.answers:
+                print(response)
+                for answer in response.answers + response.additionals:
                     if answer.type_ == Type.A or answer.type_ == Type.CNAME:
                         self.cache.add_record(answer)
 
@@ -193,7 +207,7 @@ class Resolver(object):
 
                 
             if ipaddrlist != []:
-                #print("We found an address for " + hostname + " using the recursive search!")
+                print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -207,13 +221,12 @@ class Resolver(object):
                                     usednameservers.append(str(additional.name))
                                 break
                         else:#This nameserver wasn't in the additional section
-                        #TODO This stuff doesn't work yet
                             if str(nameserver.rdata.nsdname) not in usednameservers and str(nameserver.rdata.nsdname) != hostname and not str(nameserver.rdata.nsdname) in resolvingnameservers:#It is an unseen nameserver
                                 _, _, nsipaddrlist = self.gethostbyname(str(nameserver.rdata.nsdname), resolvingnameservers=resolvingnameservers + [str(nameserver.rdata.nsdname)])
                                 hints = nsipaddrlist + hints
                                 usednameservers.append(str(nameserver.rdata.nsdname))
                                 
 
-        #print("Recursive search for " + hostname + " was a total failure")
+        print("Recursive search for " + hostname + " was a total failure")
         #print("We still had the following unresolved hints:",unresolvedhints)
         return hostname, [], []

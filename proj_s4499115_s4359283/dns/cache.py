@@ -21,28 +21,28 @@ class RecordCache(object):
     """ Cache for ResourceRecords """
 
     def __init__(self):
-        """ Initialize the RecordCache
-        
-        Args:
-            ttl (int): TTL of cached entries (if > 0)
-        """
+        """ Initialize the RecordCache """
+        print("Creating cache")
         self.records = []
         self.lock = threading.Lock()
 
         #Lees de cache in, update de ttls, gooi alle invalid data weg
         self.read_cache_file()
         self.lastCleanup = time.time()
+        print("Done creating cache")
     
     def cleanup(self):
         """ Remove all entries in the cache whose TTL has expired """
 
         #gooi de entries weg met ttl <=0
+        """
         self.lock.acquire()
         curTime = int(time.time())
         self.records = [record for record in self.records if record.ttl + record.timestamp > curTime]
         self.lock.release()
+        """
 
-        self.lastCleanup = curTime
+        self.lastCleanup = int(time.time())#curTime
     
     def lookup(self, dname, type_, class_):
         """ Lookup resource records in cache
@@ -58,15 +58,22 @@ class RecordCache(object):
 
         if (int(time.time()) - self.lastCleanup >= 3600): #Cache al een uur lang niet gecleaned
             self.cleanup()
+        #print("STARTING LOOKUP FOR",dname, type_, class_)
+        #for record in self.records:
+        #    print(record.name,record.type_,record.class_)
+        #    if str(record.name) == dname and record.type_ == type_ and record.class_ == class_:
+        #        print("MATCH")
         foundrecords = [record for record in self.records \
-                if record.name == dname and record.type_ == type_ and record.class_ == class_ \
-                and record.ttl + record.timestamp > time.time()]#maybe change how timestamps work here
+                if str(record.name) == dname and record.type_ == type_ and record.class_ == class_ \
+                and True]#record.ttl + record.timestamp > time.time()]#maybe change how timestamps work here
         
         #Verschuif de ttl en timestamp naar nu
+        """
         curTime = int(time.time())
         for record in foundrecords:
             record.ttl = int(record.ttl - (curTime - record.timestamp))
             record.timestamp = curTime
+        """
             
         return foundrecords
         
@@ -85,6 +92,8 @@ class RecordCache(object):
                     record.ttl = new_rec.ttl
                     record.timestamp = new_rec.timestamp
         else:
+            print("CACHE--Adding record..")
+            print(new_rec.to_dict())
             self.records.append(new_rec)
         self.lock.release()
 
@@ -97,13 +106,10 @@ class RecordCache(object):
         try:
             with open(cache_file,"r") as infile:
                 curTime = int(time.time())
-                
                 dcts = json.load(infile)
                 recordlist = [ResourceRecord.from_dict(dct) for dct in dcts]
-
                 #Don't add the entries whose TTL is expired
                 recordlist = [entry for entry in recordlist if entry.ttl + entry.timestamp > curTime]
-
                 #Save all entries together with the time from which the TTL counts
                 self.records = recordlist
 
@@ -112,6 +118,9 @@ class RecordCache(object):
             self.records = []
             with open(cache_file, 'w') as outfile:
                 json.dump([], outfile, indent=2)
+        #print("Loaded the following records:")
+        #for rec in self.records:
+        #    print(rec.to_dict())
 
     def write_cache_file(self):
         """ Write the cache file to disk """
