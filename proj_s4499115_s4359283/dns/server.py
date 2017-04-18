@@ -18,7 +18,7 @@ from dns.classes import Class
 from dns.rtypes import Type
 import dns.consts as Consts
 from dns.name import Name
-from dns.message import Message
+from dns.message import Message, Header
 
 
 lock = Lock()
@@ -107,59 +107,47 @@ class RequestHandler(Thread):
 
     def handle_request(self):
         """ Attempts to answer the received query """
-        self.sendResponse(self.message)
-        return#TODO this is temp used it to debug the to/frombytes methods
+        #Check this next to the given algorithm
 
         
         print("[*] - Handling request.")
         if len(self.message.questions) != 1:
             print("[-] - Invalid request.")#Hier bestaat een statuscode voor toch?
             return
-        print("MSG:",self.message)
-        print("RECEIVED QUESTION",self.message.questions[0])
+        #print("MSG:",self.message)
+        #print("RECEIVED QUESTION",self.message.questions[0])
         hname = str(self.message.questions[0].qname)
-        print("Solving",hname)
+        #print("Solving",hname)
         ident = self.message.header.ident
-        print("Checking zone")
+        #print("Checking zone")
         #answer, authority, found = self.check_zone(hname)
         #print("Wat we in de zone hebben gevonden")
         #print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
         found = False
-        if found:
-            header = dns.message.Header(ident, 0, 1, len(answer), len(authority), 0)
-            header.rd = 1 if self.message.header.rd == 256 else 0
-            header.ra = 1
-            header.aa = 1
-            header.opcode = 0
+        if found:#Still broken
+            header = Header(ident, 0, 1, len(answer), len(authority), 0)
             header.qr = 1
-
-            self.sendResponse(dns.message.Message(header, self.message.questions, answer, authority))
+            header.aa = 1
+            header.rd = self.message.header.rd
+            header.ra = 1
+            
+            #Check this still
+            self.sendResponse(Message(header, self.message.questions, answer, authority))
 
         else:
-            print("Niet in zone, zoek online...")
             h, al, ad = self.resolver.gethostbyname(hname)
-            print("Server gebruikte online resolver en vond dit")
-            print("HOSTNAME",h,type(h))
-            print("ALIASES",al,type(al))
-            for k in al:
-                print(k,type(k))
-            print("ADDITIONAL",ad,type(ad))
-            for k in ad:
-                print(k,type(k))
-            al = []
-            ad = []
-            if True:#if ad
-                header = dns.message.Header(ident, 0, 1, len(al) + len(ad), 0, 0)
-                #header.rd = 1 if self.message.header.rd == 256 else 0
-                #header.ra = 1
-                #header.opcode = 0
-                #header.qr = 1
 
-                aliases = []#[ResourceRecord(Name(h), Type.CNAME, Class.IN, self.ttl, RecordData.create(Type.CNAME, Name(alias))) for alias in al]
-                addresses = []#[ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
+            #Make and send th appropriate response
+            header = Header(ident, 0, 1, len(al) + len(ad), 0, 0)
+            header.qr = 1
+            header.rd = self.message.header.rd
+            header.ra = 1
+            header.rcode = 0 #TODO https://www.ietf.org/rfc/rfc1035.txt p26 look up errors
+            
+            aliases = [ResourceRecord(Name(h), Type.CNAME, Class.IN, self.ttl, RecordData.create(Type.CNAME, Name(alias))) for alias in al]
+            addresses = [ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
 
-                #self.sendResponse(dns.message.Message(header, self.message.questions, aliases + addresses))
-                self.sendResponse(self.message)
+            self.sendResponse(Message(header,self.message.questions, aliases + addresses))
 
         #Nog een error response sturen anders?
         

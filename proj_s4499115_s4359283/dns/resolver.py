@@ -162,7 +162,7 @@ class Resolver(object):
             header = Header(identifier, 0, 1, 0, 0, 0)
             header.qr = 0
             header.opcode = 0
-            header.rd = 0
+            header.rd = 1
             query = Message(header, questions)
 
             #print("Asking the server "+ hint)

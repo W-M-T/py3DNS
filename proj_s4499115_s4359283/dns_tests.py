@@ -95,29 +95,29 @@ class TestServer(TestCase):
         self.assertEqual(h1, h2)
         self.assertEqual(al1, al2)
         self.assertEqual(ad1, ad2)
-
+    """
     def testSolveFQDNNotInZone(self):
         h, al, ad = self.offline_resolver1.gethostbyname("hestia.dance")
 
         self.assertEqual("hestia.dance.", h)
         self.assertEqual([], al)
         self.assertEqual(["162.246.59.52"], ad)
-    """
+
     def testParallelRequest(self):
-        #helper1 = ThreadHelper(self.offline_resolver1, "hestia.dance.")
+        helper1 = ThreadHelper(self.offline_resolver1, "hestia.dance.")
         helper2 = ThreadHelper(self.offline_resolver2, "gaia.cs.umass.edu.")
-        #t1 = Thread(target=helper1.run)
+        t1 = Thread(target=helper1.run)
         t2 = Thread(target=helper2.run)
-        #t1.daemon = True
+        t1.daemon = True
         t2.daemon = True
-        #t1.start()
+        t1.start()
         t2.start()
-        #t1.join()
+        t1.join()
         t2.join()
 
-        #self.assertEqual("hestia.dance.", helper1.h)
-        #self.assertEqual([], helper1.al)
-        #self.assertEqual(["162.246.59.52"], helper1.ad)
+        self.assertEqual("hestia.dance.", helper1.h)
+        self.assertEqual([], helper1.al)
+        self.assertEqual(["162.246.59.52"], helper1.ad)
 
         self.assertEqual("gaia.cs.umass.edu.", helper2.h)
         self.assertEqual([], helper2.al)
