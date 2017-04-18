@@ -96,7 +96,7 @@ class Resolver(object):
         return response
 
 
-    def gethostbyname(self, hostname):
+    def gethostbyname(self, hostname, resolvingnameservers=[]):
         """ Resolve hostname to an IP address
 
         Args:
@@ -108,7 +108,7 @@ class Resolver(object):
             ipaddrlist ([str]): list of IP addresses of the hostname 
 
         """
-        print("==GETHOSTNAME START================= (",hostname,")")
+        #print("==GETHOSTNAME START================= (",hostname,")")
         aliaslist = []
         ipaddrlist = []
 
@@ -159,7 +159,7 @@ class Resolver(object):
             header.rd = 0
             query = Message(header, questions)
 
-            print("Asking the server "+ hint)
+            #print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
@@ -167,7 +167,7 @@ class Resolver(object):
                 print("Server at " + hint + " did not respond.")
                 continue
 
-            print(response)
+            #print(response)
 
             #Cache the response A and CNAME records
             if self.caching:
@@ -193,7 +193,7 @@ class Resolver(object):
 
                 
             if ipaddrlist != []:
-                print("We found an address for " + hostname + " using the recursive search!")
+                #print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -208,12 +208,12 @@ class Resolver(object):
                                 break
                         else:#This nameserver wasn't in the additional section
                         #TODO This stuff doesn't work yet
-                            if str(nameserver.rdata.nsdname) not in usednameservers and str(nameserver.rdata.nsdname) != hostname:#It is an unseen nameserver
-                                _, _, nsipaddrlist = self.gethostbyname(str(nameserver.rdata.nsdname))
+                            if str(nameserver.rdata.nsdname) not in usednameservers and str(nameserver.rdata.nsdname) != hostname and not str(nameserver.rdata.nsdname) in resolvingnameservers:#It is an unseen nameserver
+                                _, _, nsipaddrlist = self.gethostbyname(str(nameserver.rdata.nsdname), resolvingnameservers=resolvingnameservers + [str(nameserver.rdata.nsdname)])
                                 hints = nsipaddrlist + hints
                                 usednameservers.append(str(nameserver.rdata.nsdname))
                                 
 
-        print("Recursive search for " + hostname + " was a total failure")
-        print("We still had the following unresolved hints:",unresolvedhints)
+        #print("Recursive search for " + hostname + " was a total failure")
+        #print("We still had the following unresolved hints:",unresolvedhints)
         return hostname, [], []
