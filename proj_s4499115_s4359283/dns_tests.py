@@ -24,7 +24,6 @@ PORT = 5001
 SERVER = "localhost"
 
 
-"""
 class TestResolver(TestCase):
     def setUp(self):
         self.resolver = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
@@ -72,7 +71,7 @@ class TestResolverCache(TestCase):
         self.assertEqual("s.h.u.c.k.l.e.", h)
         self.assertEqual([], al)
         self.assertEqual([], ad)
-"""
+
 #INCOMPLETE
 class TestServer(TestCase):
     def setUp(self):
@@ -81,7 +80,7 @@ class TestServer(TestCase):
         #This means that the server should be running in order to perform these tests
         self.offline_resolver1 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, ["localhost"], False)
         self.offline_resolver2 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, ["localhost"], False)
-    """
+
     def testSolveFQDNDirectAuthority(self):
         h1, al1, ad1 = self.offline_resolver1.gethostbyname("shuckle.ru.nl.")
         h2, al2, ad2 = self.resolver.gethostbyname("ru.nl")
@@ -89,13 +88,13 @@ class TestServer(TestCase):
         self.assertEqual(ad1, ad2)
 
     def testSolveFQDNNoDirectAuthority(self):
-        h1, al1, ad1 = self.resolver.gethostbyname("cs.ru.nl")
+        h1, al1, ad1 = self.resolver.gethostbyname("cs.ru.nl.")
         h2, al2, ad2 = self.offline_resolver1.gethostbyname("cs.ru.nl.")
 
         self.assertEqual(h1, h2)
         self.assertEqual(al1, al2)
         self.assertEqual(ad1, ad2)
-    """
+
     def testSolveFQDNNotInZone(self):
         h, al, ad = self.offline_resolver1.gethostbyname("hestia.dance")
 
@@ -122,7 +121,7 @@ class TestServer(TestCase):
         self.assertEqual("gaia.cs.umass.edu.", helper2.h)
         self.assertEqual([], helper2.al)
         self.assertEqual(["128.119.245.12"], helper2.ad)
-    
+
 
 class ThreadHelper(Thread):
 

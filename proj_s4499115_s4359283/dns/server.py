@@ -50,9 +50,9 @@ class RequestHandler(Thread):
             A boolean that tells if we found something
         """
         #print("Checking zone for \"" + hname + "\"")
-        return [], [], False
+        #return [], [], False
         
-        h_parts = hname.rstrip('.').split('.')
+        h_parts = str(hname).rstrip('.').split('.')
 
         zone_match = None
         best_rdn_parts = []
@@ -68,23 +68,27 @@ class RequestHandler(Thread):
                 best_rdn_parts = rdn_parts
                  
         if zone_match == None:
-            #print("Geen zone gevonden")
+            print("Geen zone gevonden")
             return [], [], False
 
         #Find the answers
         authority = []
         answer = []
-
-        for fqdn, record in zone_match.records.iteritems():   
-            if fqdn.rstrip('.') == hname and record.type_ != Type.NS:#Precies het adres dat we willen
+        #print("Found match:",zone_match.records)
+        for fqdn, record in zone_match.records.items():
+            print(fqdn,"=?=",hname)
+            if fqdn == hname and record.type_ != Type.NS:#Precies het adres dat we willen
+                print("NAMES MATCH",record.to_dict())
                 if self.message.questions[0].qtype == record.type_:
+                    print("IFIFIFIFIF")
                     #print("recorddata: " + str(record.rdata.data))
                     answer.append(record)
                     
                 elif self.message.questions[0].qtype != Type.CNAME and record.type_ == Type.CNAME:
                     answer.append(record)
+                    print("EFEFEFEFEF")
                     #Find the info for this new cname if you have it
-                    extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.data)
+                    extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.cname)
                     answer = answer + extra_answer
                     authority = authority + extra_authority
                     
@@ -93,11 +97,13 @@ class RequestHandler(Thread):
             #print(subaddress)
             
 
-            for fqdn, record in zone_match.records.iteritems():                     
+            for fqdn, record in zone_match.records.items():   
+                print(fqdn,"=?=",hname)                  
                 if fqdn.rstrip('.') == subaddress and record.type_ == Type.NS:
+                    print("NAMES MATCH",record.to_dict())
                     authority.append(record)
 
-                    extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.data)
+                    extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.nsdname)
                     answer = answer + extra_answer
                     authority = authority + extra_authority
 
@@ -109,7 +115,11 @@ class RequestHandler(Thread):
         """ Attempts to answer the received query """
         #Check this next to the given algorithm
 
-        
+        print("Catalog:",self.catalog.zones)
+        for zone in self.catalog.zones:
+            print("Records:",self.catalog.zones[zone].records)
+
+
         print("[*] - Handling request.")
         if len(self.message.questions) != 1:
             print("[-] - Invalid request.")#Hier bestaat een statuscode voor toch?
@@ -117,13 +127,13 @@ class RequestHandler(Thread):
         #print("MSG:",self.message)
         #print("RECEIVED QUESTION",self.message.questions[0])
         hname = str(self.message.questions[0].qname)
-        #print("Solving",hname)
+        print("Solving",hname,type(hname))
         ident = self.message.header.ident
         #print("Checking zone")
-        #answer, authority, found = self.check_zone(hname)
-        #print("Wat we in de zone hebben gevonden")
-        #print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
-        found = False
+        answer, authority, found = self.check_zone(hname)
+        print("Wat we in de zone hebben gevonden")
+        print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
+        #found = False
         if found:#Still broken
             header = Header(ident, 0, 1, len(answer), len(authority), 0)
             header.qr = 1

@@ -5,6 +5,7 @@ import dns.consts as Consts
 from dns.classes import Class
 from dns.rtypes import Type
 from dns.resource import RecordData, ResourceRecord
+from dns.name import Name
 
 """ Zones of domain name space 
 
@@ -119,5 +120,8 @@ class Zone(object):
 
                 rr_class = Class[parts[1+offset]]
                 rr_type = parts[2+offset]
-                rr_data = RecordData.create(Type[rr_type], parts[3+offset].rstrip('.'))
-                self.add_node(rr_name, ResourceRecord(rr_name, Type[rr_type], rr_class, rr_ttl, rr_data))
+                if Type[rr_type] == Type.CNAME or Type[rr_type] == Type.NS:
+                    rr_data = RecordData.create(Type[rr_type], Name(parts[3+offset].rstrip('.')))
+                else:
+                    rr_data = RecordData.create(Type[rr_type], parts[3+offset].rstrip('.'))
+                self.add_node(rr_name, ResourceRecord(Name(rr_name), Type[rr_type], rr_class, rr_ttl, rr_data))
