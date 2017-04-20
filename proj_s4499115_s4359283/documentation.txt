@@ -1,6 +1,6 @@
 py3DNS: A simple DNS server and resolver for Python 3.6
 By: Ward Theunisse, s4499115 & Luuk van Blitterswijk, s4359283
-Version: 1.01
+Version: 1.02
 
 IMPORTANT NOTICE:
 
@@ -24,10 +24,13 @@ The client and tests can be run from command line with several optional paramete
 
 #running the dns client
 python3 dns_client.py [--timeout socket-timeout] [-c caching] [ -t ttl]
+
 #running the dns server
 python dns_server.py [-c caching] [-p PORT] [-t ttl]
+
 #running the tests
 python3 dns_tests.py [-s IP] [-p PORT]
+
 Where:
    timeout sets the timeout in seconds of recursive dns queries
    c enables caching. Default: disabled.
@@ -47,13 +50,12 @@ If so, the query is answered directly. Otherwise the request is passed on to a r
 
 RESOLVER:
 
-In the beginning, the resolver only knows about the root servers. (There is a flag, use_rs, that disables this for tests).
+In the beginning, the resolver only knows about the root servers. (There is a flag, use_rs, that disables this for tests when set to False).
 Additional nameservers can also be passed, but by default this is not the case.
 The resolver maintains a stack-like structure of nameservers that it can query.
 While we don't have an answer, we pop the most recently added server from that stack and send it the query.
 We do not request recursion.
-When we get a response that contains an IP for the hostname or one of its aliases, we return the hostname and aliases along
-with the IP address(es).
+When we get a response that contains an IP for the hostname or one of its aliases, we return the hostname and aliases along with the IP address(es).
 
 
 
@@ -61,14 +63,15 @@ CACHING:
 
 The resolver is capable of using and managing a cache.
 If the cache is enabled the resolver first tries to answer the query using the entries in the cache.
-If this fails it proceeds performing the steps described above, but in addition, all received responses are stored in the cache.
+If this fails it proceeds performing the steps described above, but in addition, all received A- and CNAME-responses are stored in the cache if they are not already present.
 
 The cache can be written to disk and read from disk as human-readable JSON.
-To manage TTLs for records, all resource records get a timestamp attribute that is used in json-serialization, but not in the from- and to-bytes methods.
-When a record is looked up, only those records are considered where their ttl + their timestamp is smaller than the current epoch time.
+To manage TTLs for records, a seperate file containing the epoch second timestamp that all ttls in the cache are relative to is stored..
+When a record is looked up, only those records are considered where their ttl + the timestamp is smaller than the current epoch time.
+For newly added records, their ttl is shifted forward with the elapsed time relative to the timestamp in order to make the ttl correct relative to now, without having to update all the other records in the cache.
 We also intermittently clean the entire cache. This happens whenever a resource is looked up and the last cleanup was over an hour ago.
-In the cleanup, all expired records are thrown away.
-Before a record is returned during lookup, it's timestamp is updated to the current time and the ttl changes accordingly. This ensures that the ttl is "roughly" correct
+In the cleanup, all expired records are thrown away, ttls for the other records are updated and the universal timestamp is updated.
+Before a record is returned during lookup, we make a deep copy for which we update the ttl to be correct relative to now instead of the universal timestamp. This copy isn't written to cache and the original record is kept intact. This ensures that the ttl is "roughly" correct
 for the receiving host ("roughly" because travel times aren't accounted for). This is necessary because timestamps are not part of the DNS protocol.
 
 
@@ -82,9 +85,8 @@ This number becomes the transaction ID.
 
 CONCURRENCY:
 
-To enable pyDNS to safely use concurrency we had to make minor adjustments.
-Multiple records being added to the cache simultaneously could be troublesome. Therefore we make use of a lock that allows
-only one record to be added at a time.
+To enable py3DNS to safely use concurrency we had to make minor adjustments.
+Multiple records being added to the cache simultaneously could be troublesome. Therefore we make use of a lock that allows only one record to be added at a time.
 
 Also, even though we only use UDP, sockets are not thread safe. We solved this only allowing one thread to send through the
 socket at a time, also making use of a lock.

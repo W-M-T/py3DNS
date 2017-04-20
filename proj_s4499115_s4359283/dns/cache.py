@@ -16,6 +16,7 @@ from dns.classes import Class
 import dns.consts as Consts
 import threading
 import time
+from copy import deepcopy
 
 class RecordCache(object):
     """ Cache for ResourceRecords """
@@ -77,6 +78,7 @@ class RecordCache(object):
                 if str(record.name) == dname and record.type_ == type_ and record.class_ == class_ \
                 and elapsed <= record.ttl]
         
+        foundrecords = [deepcopy(record) for record in foundrecords]
         #Verschuif de ttl en timestamp naar nu
         for record in foundrecords:
             record.ttl -= elapsed
