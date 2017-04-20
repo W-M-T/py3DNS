@@ -24,7 +24,7 @@ from dns.name import Name
 class Resolver(object):
     """ DNS resolver """
     
-    def __init__(self, timeout, caching, ttl, nameservers=[], use_rs=True):
+    def __init__(self, timeout, caching, ttl, nameservers=[], use_rs=True, serverport=53):
         """ Initialize the resolver
         
         Args:
@@ -38,6 +38,8 @@ class Resolver(object):
         self.nameservers = nameservers
         if use_rs:
             self.nameservers += dns.consts.ROOT_SERVERS
+
+        self.serverport = serverport
 
 
     def is_valid_hostname(self, hostname):
@@ -75,7 +77,7 @@ class Resolver(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(self.timeout)
         try:
-            sock.sendto(query.to_bytes(), (server, 53))
+            sock.sendto(query.to_bytes(), (server, self.serverport))
             data = sock.recv(1024)
             response = Message.from_bytes(data)
             if response.header.ident != query.header.ident:

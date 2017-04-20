@@ -20,7 +20,7 @@ import dns.consts as Consts
 
 
 
-PORT = 5001
+PORT = 53
 SERVER = "localhost"
 
 
@@ -78,8 +78,8 @@ class TestServer(TestCase):
         self.resolver = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
         #By offline_resolver we mean a resolver that only knows about the local server (and not about the root servers).
         #This means that the server should be running in order to perform these tests
-        self.offline_resolver1 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, ["localhost"], False)
-        self.offline_resolver2 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, ["localhost"], False)
+        self.offline_resolver1 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, [SERVER], use_rs=False)
+        self.offline_resolver2 = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL, [SERVER], use_rs=False)
 
     def testSolveFQDNDirectAuthority(self):
         h1, al1, ad1 = self.offline_resolver1.gethostbyname("shuckle.ru.nl.")
@@ -143,7 +143,7 @@ def run_tests():
     parser = ArgumentParser(description="DNS Tests")
     parser.add_argument("-s", "--server", type=str, default="localhost",
                         help="the address of the server")
-    parser.add_argument("-p", "--port", type=int, default=5001,
+    parser.add_argument("-p", "--port", type=int, default=53,
                         help="the port of the server")
     args, extra = parser.parse_known_args()
     

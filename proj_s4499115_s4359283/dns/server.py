@@ -144,7 +144,7 @@ class RequestHandler(Thread):
             #Check this still
             self.sendResponse(Message(header, self.message.questions, answer, authority))
 
-        else:
+        elif self.message.header.rd == 1:
             h, al, ad = self.resolver.gethostbyname(hname)
 
             #Make and send th appropriate response
@@ -158,7 +158,9 @@ class RequestHandler(Thread):
             addresses = [ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
 
             self.sendResponse(Message(header,self.message.questions, aliases + addresses))
-
+        else:
+            print("FIX THIS STILL")
+            pass
         #Nog een error response sturen anders?
         
             
