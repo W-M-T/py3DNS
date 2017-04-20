@@ -84,7 +84,7 @@ class RequestHandler(Thread):
                     #print("recorddata: " + str(record.rdata.data))
                     answer.append(record)
                     
-                elif self.message.questions[0].qtype != Type.CNAME and record.type_ == Type.CNAME:
+                elif self.message.questions[0].qtype != Type.CNAME and record.type_ == Type.CNAME:#alias van iets wat we zoeken
                     answer.append(record)
                     print("EFEFEFEFEF")
                     #Find the info for this new cname if you have it
