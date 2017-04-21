@@ -13,7 +13,7 @@ This has been communicated with Paul Fiterau Brostean and permission for this wa
 INTRODUCTION:
 
 Py3DNS is a simple DNS server and resolver written in Python 3.6 for Unix-based operating systems
-It is built on top of a provided framework. This framework was written in Python 3.6. Some tests are
+It is built on top of a provided framework which was also written in Python 3.6. Some tests are
 provided in dns_tests.py.
 
 
