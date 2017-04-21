@@ -148,6 +148,7 @@ class Resolver(object):
         usednameservers = []#List of names of nameservers that have been seen
         
         while hints:
+            #print(usedhints)
             #Get the server to ask
             hint = hints[0]
             usedhints.append(hint)
@@ -167,7 +168,7 @@ class Resolver(object):
             header.rd = 1
             query = Message(header, questions)
 
-            #print("Asking the server "+ hint)
+            print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
@@ -202,7 +203,7 @@ class Resolver(object):
 
                 
             if ipaddrlist != []:
-                #print("We found an address for " + hostname + " using the recursive search!")
+                print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -210,7 +211,7 @@ class Resolver(object):
                     if nameserver.type_ == Type.NS:
                         #Check if we got the ip of this nameserver in the additional section
                         for additional in response.additionals:
-                            if nameserver.rdata.nsdname == additional.name:
+                            if nameserver.rdata.nsdname == additional.name and additional.type_ != Type.AAAA:
                                 if str(additional.rdata.address) not in usedhints:#Prevent recycling of old hints
                                     hints = [str(additional.rdata.address)] + hints
                                     usednameservers.append(str(additional.name))
@@ -222,6 +223,5 @@ class Resolver(object):
                                 usednameservers.append(str(nameserver.rdata.nsdname))
                                 
 
-        #print("Recursive search for " + hostname + " was a total failure")
-        #print("We still had the following unresolved hints:",unresolvedhints)
+        print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []

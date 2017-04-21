@@ -26,7 +26,7 @@ The client and tests can be run from command line with several optional paramete
 python3 dns_client.py [--timeout socket-timeout] [-c caching] [ -t ttl]
 
 #running the dns server
-python dns_server.py [-c caching] [-p PORT] [-t ttl]
+python3 dns_server.py [-c caching] [-p PORT] [-t ttl]
 
 #running the tests
 python3 dns_tests.py [-s IP] [-p PORT]
@@ -44,8 +44,8 @@ CONNECTION HANDLING:
 
 The server listens for new connections in the main thread. When data is received, a seperate thread is made to handle that data.
 In this new thread, the connectionhandler first checks if the query is about the zone that the server is authorative over.
-If so, the query is answered directly. Otherwise the request is passed on to a resolver that solves the query recursively.
-
+If so, the query is answered directly with the authoritative flag set. Otherwise the request is passed on to a resolver that solves the query recursively.
+We also support a couple of error responses. 4 for nonstandard queries, because we don't (and don't need to) support those, 1 for queries that contain no questions, because they don't follow the dns protocol.
 
 
 RESOLVER:

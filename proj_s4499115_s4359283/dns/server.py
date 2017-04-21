@@ -164,7 +164,6 @@ class RequestHandler(Thread):
             header.qr = 1
             header.rd = self.message.header.rd
             header.ra = 1
-            header.rcode = 0 #TODO https://www.ietf.org/rfc/rfc1035.txt p26 look up errors
             
             aliases = [ResourceRecord(Name(h), Type.CNAME, Class.IN, self.ttl, RecordData.create(Type.CNAME, Name(alias))) for alias in al]
             addresses = [ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
