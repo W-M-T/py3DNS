@@ -127,12 +127,16 @@ class RecordCache(object):
 
         except (ValueError, IOError, FileNotFoundError) as e:
             print("An error has occured while loading cache from disk: " + str(e))
-            self.records = []
+
             with open(cache_file, 'w') as outfile:
                 json.dump([], outfile, indent=2)
 
             with open(cache_file + ".timestamp", 'w') as outfile:
                 outfile.write(str(self.lastCleanup))
+
+            if isinstance(e,FileNotFoundError):
+                print("Missing files were created")
+            self.records = []
         #print("Loaded the following records:")
         #for rec in self.records:
         #    print(rec.to_dict())

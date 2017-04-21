@@ -168,7 +168,7 @@ class Resolver(object):
             header.rd = 1
             query = Message(header, questions)
 
-            print("Asking the server "+ hint)
+            #print("Asking the server "+ hint)
             #Try to get a response
             response = self.ask_server(query, hint)
 
@@ -203,7 +203,7 @@ class Resolver(object):
 
                 
             if ipaddrlist != []:
-                print("We found an address for " + hostname + " using the recursive search!")
+                #print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -223,5 +223,5 @@ class Resolver(object):
                                 usednameservers.append(str(nameserver.rdata.nsdname))
                                 
 
-        print("Recursive search for " + hostname + " was a total failure")
+        #print("Recursive search for " + hostname + " was a total failure")
         return hostname, [], []

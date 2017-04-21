@@ -55,7 +55,7 @@ Additional nameservers can also be passed, but by default this is not the case.
 The resolver maintains a stack-like structure of nameservers that it can query.
 While we don't have an answer, we pop the most recently added server from that stack and send it the query.
 We do not request recursion.
-When we get a response that contains an IP for the hostname or one of its aliases, we return the hostname and aliases along with the IP address(es).
+When we get a response that contains an IPv4 address for the hostname or one of its aliases, we return the hostname and aliases along with the IP address(es).
 
 
 
