@@ -72,7 +72,6 @@ class TestResolverCache(TestCase):
         self.assertEqual([], al)
         self.assertEqual([], ad)
 
-#INCOMPLETE
 class TestServer(TestCase):
     def setUp(self):
         self.resolver = Resolver(Consts.DEFAULT_TIMEOUT, False, Consts.DEFAULT_TTL)
