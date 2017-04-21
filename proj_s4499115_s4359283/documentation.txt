@@ -66,8 +66,8 @@ If the cache is enabled the resolver first tries to answer the query using the e
 If this fails it proceeds performing the steps described above, but in addition, all received A- and CNAME-responses are stored in the cache if they are not already present.
 
 The cache can be written to disk and read from disk as human-readable JSON.
-To manage TTLs for records, a seperate file containing the epoch second timestamp that all ttls in the cache are relative to is stored..
-When a record is looked up, only those records are considered where their ttl + the timestamp is smaller than the current epoch time.
+To manage TTLs for records, a seperate file containing the epoch second timestamp that all ttls in the cache are relative to is stored.
+When a record is looked up, only those records are considered where the sum of their ttl and the timestamp is smaller than the current epoch time.
 For newly added records, their ttl is shifted forward with the elapsed time relative to the timestamp in order to make the ttl correct relative to now, without having to update all the other records in the cache.
 We also intermittently clean the entire cache. This happens whenever a resource is looked up and the last cleanup was over an hour ago.
 In the cleanup, all expired records are thrown away, ttls for the other records are updated and the universal timestamp is updated.
@@ -90,6 +90,10 @@ Multiple records being added to the cache simultaneously could be troublesome. T
 
 Also, even though we only use UDP, sockets are not thread safe. We solved this only allowing one thread to send through the
 socket at a time, also making use of a lock.
+
+
+PROBLEMS ENCOUNTERED:
+We honestly didn't really encounter any big problems. Any small problem we encountered were easily overcome by debug statements.
 
 
 
