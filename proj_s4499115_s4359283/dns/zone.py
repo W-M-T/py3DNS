@@ -89,7 +89,7 @@ class Zone(object):
     def time_to_seconds(self, timestring):
         return sum(map(self.time_to_seconds_helper, re.findall(re.compile("\d+\w"), timestring)))
 
-    def load_and_parse(self, content):#TODO take another look at this
+    def load_and_parse(self, content):
         content = re.sub(re.compile(";.*?\n"), "\n", content) #Remove comments
         content = re.sub(re.compile("\n\n*\n") , "\n", content) #Remove whitespaces
         content = re.sub(re.compile("  * ") , " ", content) #Remove multiple spaces between words

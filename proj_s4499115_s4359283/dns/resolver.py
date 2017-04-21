@@ -103,7 +103,7 @@ class Resolver(object):
             ipaddrlist ([str]): list of IP addresses of the hostname 
 
         """
-        print("==GETHOSTNAME START================= (",hostname,")")
+        #print("==GETHOSTNAME START================= (",hostname,")")
         aliaslist = []
         ipaddrlist = []
 
@@ -121,15 +121,15 @@ class Resolver(object):
         if self.caching:
             #print("Checking cache..")
             for addr in self.cache.lookup(hostname, Type.A, Class.IN):
-                print("Found A in cache: ", addr.to_dict())
+                #print("Found A in cache: ", addr.to_dict())
                 ipaddrlist.append(str(addr.rdata.address))
 
             if ipaddrlist:#If we already found the ip here, don't go after possible cname stuff
-                print("We found an address in the cache!")
+                #print("We found an address in the cache!")
                 return hostname, aliaslist, ipaddrlist
 
             for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
-                print("Found CNAME in cache: ", alias.to_dict())
+                #print("Found CNAME in cache: ", alias.to_dict())
                 aliaslist.append(str(alias.rdata.cname))
                 _, recaliaslist, recipaddrlist = self.gethostbyname(str(alias.rdata.cname))
 
@@ -137,7 +137,7 @@ class Resolver(object):
                 ipaddrlist += recipaddrlist
             
             if ipaddrlist:
-                print("We found an address in the cache!")
+                #print("We found an address in the cache!")
                 return hostname, aliaslist, ipaddrlist
 
 
@@ -202,7 +202,7 @@ class Resolver(object):
 
                 
             if ipaddrlist != []:
-                print("We found an address for " + hostname + " using the recursive search!")
+                #print("We found an address for " + hostname + " using the recursive search!")
                 return hostname, aliaslist, ipaddrlist
 
             else:
@@ -222,6 +222,6 @@ class Resolver(object):
                                 usednameservers.append(str(nameserver.rdata.nsdname))
                                 
 
-        print("Recursive search for " + hostname + " was a total failure")
+        #print("Recursive search for " + hostname + " was a total failure")
         #print("We still had the following unresolved hints:",unresolvedhints)
         return hostname, [], []

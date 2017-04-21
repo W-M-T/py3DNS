@@ -50,7 +50,6 @@ class RequestHandler(Thread):
             A boolean that tells if we found something
         """
         #print("Checking zone for \"" + hname + "\"")
-        #return [], [], False
         
         h_parts = str(hname).rstrip('.').split('.')
 
@@ -68,7 +67,7 @@ class RequestHandler(Thread):
                 best_rdn_parts = rdn_parts
                  
         if zone_match == None:
-            print("Geen zone gevonden")
+            #print("Geen zone gevonden")
             return [], [], False
 
         #Find the answers
@@ -76,17 +75,15 @@ class RequestHandler(Thread):
         answer = []
         #print("Found match:",zone_match.records)
         for fqdn, record in zone_match.records.items():
-            print(fqdn,"=?=",hname)
+            #print(fqdn,"=?=",hname)
             if fqdn == hname and record.type_ != Type.NS:#Precies het adres dat we willen
-                print("NAMES MATCH",record.to_dict())
+                #print("NAMES MATCH",record.to_dict())
                 if self.message.questions[0].qtype == record.type_:
-                    print("IFIFIFIFIF")
                     #print("recorddata: " + str(record.rdata.data))
                     answer.append(record)
                     
                 elif self.message.questions[0].qtype != Type.CNAME and record.type_ == Type.CNAME:#alias van iets wat we zoeken
                     answer.append(record)
-                    print("EFEFEFEFEF")
                     #Find the info for this new cname if you have it
                     extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.cname)
                     answer = answer + extra_answer
@@ -98,9 +95,9 @@ class RequestHandler(Thread):
             
 
             for fqdn, record in zone_match.records.items():   
-                print(fqdn,"=?=",hname)                  
+                #print(fqdn,"=?=",hname)                  
                 if fqdn.rstrip('.') == subaddress and record.type_ == Type.NS:
-                    print("NAMES MATCH",record.to_dict())
+                    #print("NAMES MATCH",record.to_dict())
                     authority.append(record)
 
                     extra_answer, extra_authority, extra_found = self.check_zone(record.rdata.nsdname)
@@ -115,33 +112,48 @@ class RequestHandler(Thread):
         """ Attempts to answer the received query """
         #Check this next to the given algorithm
 
-        print("Catalog:",self.catalog.zones)
-        for zone in self.catalog.zones:
-            print("Records:",self.catalog.zones[zone].records)
+        #print("Catalog:",self.catalog.zones)
+        #for zone in self.catalog.zones:
+        #    print("Records:",self.catalog.zones[zone].records)
 
+        if self.message.header.opcode != 0:#Send a not implemented error, we don't need to support those kinds of queries
+            print("[-] - Received a nonstandard query. This is unsupported.")
+            header = Header(ident, 0, 1, 0, 0, 0)
+            header.qr = 1
+            header.rd = self.message.header.rd
+            header.ra = 1
+            header.rcode = 4 
+            self.sendResponse(Message(header,self.message.questions, []))
+            return
 
-        print("[*] - Handling request.")
-        if len(self.message.questions) != 1:
-            print("[-] - Invalid request.")#Hier bestaat een statuscode voor toch?
+        #print("[*] - Handling request.")
+        if len(self.message.questions) != 1:#Send a format error response
+            print("[-] - Invalid request.")
+            header = Header(ident, 0, 1, 0, 0, 0)
+            header.qr = 1
+            header.rd = self.message.header.rd
+            header.ra = 1
+            header.rcode = 1 
+            self.sendResponse(Message(header,self.message.questions, []))
             return
         #print("MSG:",self.message)
         #print("RECEIVED QUESTION",self.message.questions[0])
         hname = str(self.message.questions[0].qname)
-        print("Solving",hname,type(hname))
+        #print("Solving",hname,type(hname))
         ident = self.message.header.ident
         #print("Checking zone")
         answer, authority, found = self.check_zone(hname)
-        print("Wat we in de zone hebben gevonden")
-        print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
+        #print("Wat we in de zone hebben gevonden")
+        #print("ANS:",answer,"AUTH:",authority,"FOUND:",found)
         #found = False
-        if found:#Still broken
+        if found:
+            print("Found in zone")
             header = Header(ident, 0, 1, len(answer), len(authority), 0)
             header.qr = 1
             header.aa = 1
             header.rd = self.message.header.rd
             header.ra = 1
             
-            #Check this still
             self.sendResponse(Message(header, self.message.questions, answer, authority))
 
         elif self.message.header.rd == 1:
@@ -158,10 +170,13 @@ class RequestHandler(Thread):
             addresses = [ResourceRecord(Name(h), Type.A, Class.IN, self.ttl, RecordData.create(Type.A, address)) for address in ad]
 
             self.sendResponse(Message(header,self.message.questions, aliases + addresses))
-        else:
-            print("FIX THIS STILL")
-            pass
-        #Nog een error response sturen anders?
+        else:#Send an empty response
+            header = Header(ident, 0, 1, 0, 0, 0)
+            header.qr = 1
+            header.rd = self.message.header.rd
+            header.ra = 1
+            header.rcode = 0 
+            self.sendResponse(Message(header,self.message.questions, []))
         
             
 

@@ -95,7 +95,7 @@ class RecordCache(object):
         self.lock.acquire()
         found = self.lookup(str(new_rec.name), new_rec.type_, new_rec.class_)
         if not found:
-            print("CACHE--Adding record..")
+            #print("CACHE--Adding record..")
             if self.ttl > 0:#TTL was a parameter, so use it
                 new_rec.ttl = self.ttl
 
@@ -103,7 +103,7 @@ class RecordCache(object):
             curTime = int(time.time())
             elapsed = curTime - self.lastCleanup
             new_rec.ttl += elapsed
-            print(new_rec.to_dict())
+            #print(new_rec.to_dict())
             self.records.append(new_rec)
 
         self.lock.release()
